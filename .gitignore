@@ -57,3 +57,9 @@ infra/warden-smoketest-password.txt
 infra/warden-lhci-test-password.txt
 infra/warden-appreview-password.txt
 infra/lighthouse-zitadel-pats.json
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/

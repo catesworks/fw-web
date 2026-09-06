@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "fleetworks_web",
+  "project_id": "26225098-e71a-4e00-b9a9-9a2c9031b707"
+}
