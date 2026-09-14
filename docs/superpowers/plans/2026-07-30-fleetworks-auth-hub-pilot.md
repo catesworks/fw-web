@@ -38,17 +38,19 @@
 ## Task 1: Zitadel SES email identity + hub DNS (Terraform)
 
 **Files:**
+
 - Create: `fleetworks-web/infra/{backend,providers,versions,ses,dns,iam,turnstile? (skip),outputs,variables}.tf` — copy the proven generic per-repo infra files from a product repo (e.g. `yellow-pages/infra/`), minus turnstile.
 - Create: `fleetworks-web/infra/hub-dns.tf` — the `id.` + `account.` CNAMEs → Render (added after the Render services exist; see Task 2/4, but scaffold the resource now with a variable).
 - Create: `fleetworks-web/infra/terraform.tfvars` (gitignored) — `domains = { "auth.id.fleetworks.dev" = { cloudflare_zone_id="7832c8a66e59e4e2676fc7d93d14d320", site_slug="fleetworks-hub", dmarc_rua="dmarc@fleetworks.dev" } }`.
 
 **Interfaces:**
+
 - Produces: SES SMTP creds for Zitadel (`terraform output smtp_usernames/smtp_passwords` keyed by `auth.id.fleetworks.dev`); the hub-DNS CNAME resources (targets filled in Task 2/4).
 
 - [ ] **Step 1:** Copy the 8 generic `.tf` files from `yellow-pages/infra/` into `fleetworks-web/infra/`, delete `turnstile.tf` + its outputs, set `backend.tf` key = `fleetworks/hub/terraform.tfstate`. Add the tfvars above. Ensure `.gitignore` covers `infra/.terraform/`, `infra/*.tfvars`, `infra/*.tfstate*`.
 - [ ] **Step 2:** Init + plan.
-  Run: `cd fleetworks-web/infra && export AWS_PROFILE=workloom AWS_REGION=us-east-2; set -a; source /Volumes/dev-ssd/repos/personal/.envrc; set +a; export TF_VAR_cloudflare_api_token=$CLOUDFLARE_API_TOKEN TF_VAR_cloudflare_account_id=$CLOUDFLARE_ACCOUNT_ID; terraform init && terraform plan -out=hub.plan`
-  Expected: creates the SES identity + DKIM (3 CNAME) + MAILFROM (MX+SPF) + DMARC + IAM SMTP user (~10 resources), 0 destroy.
+      Run: `cd fleetworks-web/infra && export AWS_PROFILE=workloom AWS_REGION=us-east-2; set -a; source /Volumes/dev-ssd/repos/personal/.envrc; set +a; export TF_VAR_cloudflare_api_token=$CLOUDFLARE_API_TOKEN TF_VAR_cloudflare_account_id=$CLOUDFLARE_ACCOUNT_ID; terraform init && terraform plan -out=hub.plan`
+      Expected: creates the SES identity + DKIM (3 CNAME) + MAILFROM (MX+SPF) + DMARC + IAM SMTP user (~10 resources), 0 destroy.
 - [ ] **Step 3:** Apply. Run: `terraform apply hub.plan`. Expected: `Apply complete`. Confirm DKIM verifies: `aws sesv2 get-email-identity --email-identity auth.id.fleetworks.dev --region us-east-2` → DkimAttributes.Status eventually SUCCESS.
 - [ ] **Step 4:** Commit (infra .tf only; tfvars/state gitignored). `git add fleetworks-web/infra/*.tf && git commit -m "infra(hub): SES identity + DNS scaffold for id.fleetworks.dev"`
 
@@ -70,6 +72,7 @@
 **Approach:** Use the **official `zitadel/zitadel` Terraform provider** to manage Zitadel's config as IaC (not console clicks). Prereq (chicken-and-egg): Zitadel must be up (Task 2) and a **machine user + JWT key** created for the provider to authenticate. Pin the provider version and confirm each resource type below exists in that version before relying on it.
 
 **Files:**
+
 - Create: `fleetworks-web/infra/zitadel.tf` — provider block (`zitadel/zitadel`, domain `id.fleetworks.dev`, `jwt_profile_file`), + resources: `zitadel_project`, `zitadel_application_oidc` (the yp Supabase client), `zitadel_smtp_config` (SES). Org can be the default instance org or a `zitadel_org`.
 - Create: `fleetworks-web/infra/zitadel-provider-key.json` (gitignored) — the machine-user JWT key.
 - Record IDs/outputs in `deploy/zitadel/README.md`.
@@ -102,10 +105,12 @@
 ## Task 5: Register the Custom OIDC provider + redirect allow-list on yp's Supabase (reusable)
 
 **Files:**
+
 - Modify: `cogs/packages/supabase-sync/src/` — add a `syncCustomOidcProvider(entry, { issuer, clientId, clientSecret, acceptableClientIds })` that calls the Supabase Admin `customProviders` API, and extend the redirect-allow-list sync to include the mobile app-scheme.
 - Test: `cogs/packages/supabase-sync/test/custom-oidc.test.ts`.
 
 **Interfaces:**
+
 - Consumes: yp ref `ndeubizireenktnvimiq` + `sbp_` token; Zitadel client_id/secret (Task 3).
 - Produces: `custom:fleetworks` provider live on yp's project; `com.yellowpages.mobile://**` + the web callback in `uri_allow_list`.
 
@@ -117,12 +122,14 @@
 ## Task 6: yellow-pages WEB — "Sign in with Fleetworks" + callback (dual-mode)
 
 **Files:**
+
 - Create: `yellow-pages/apps/web/src/app/auth/callback/route.ts` (OIDC code exchange).
 - Modify: `yellow-pages/apps/web/src/app/login/login-form.tsx` (add the button).
 - Modify: `yellow-pages/apps/web/src/proxy.ts` (ensure `/auth` public — already is from Phase 1).
 - Test: `yellow-pages/apps/web/src/app/auth/callback/route.test.ts` (if the repo tests routes) OR a Playwright/manual e2e.
 
 **Interfaces:**
+
 - Consumes: `custom:fleetworks` provider (Task 5).
 - Produces: a working web federated login on yp.
 
@@ -130,15 +137,15 @@
 - [ ] **Step 2:** Implement the callback route:
   ```ts
   export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url)
-    const code = searchParams.get('code')
-    const next = validNext(searchParams.get('next')) // startsWith('/') && !startsWith('//')
+    const { searchParams, origin } = new URL(request.url);
+    const code = searchParams.get('code');
+    const next = validNext(searchParams.get('next')); // startsWith('/') && !startsWith('//')
     if (code) {
-      const supabase = await createSupabaseServerClient()
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (!error) return Response.redirect(new URL(next ?? '/dashboard', origin))
+      const supabase = await createSupabaseServerClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) return Response.redirect(new URL(next ?? '/dashboard', origin));
     }
-    return Response.redirect(new URL('/login?error=oauth', origin))
+    return Response.redirect(new URL('/login?error=oauth', origin));
   }
   ```
   Run test → PASS.
@@ -149,36 +156,40 @@
 ## Task 7: yellow-pages MOBILE (Expo) — "Sign in with Fleetworks"
 
 **Files:**
+
 - Create: `yellow-pages/apps/mobile/lib/fleetworks-oauth.ts`.
 - Modify: `yellow-pages/apps/mobile/app/(auth)/login.tsx` (button).
 - Modify: `yellow-pages/apps/mobile/app.config.*` (confirm `scheme`), `lib/supabase.ts` (client opts).
 - Add dep: `expo-web-browser`, `expo-auth-session` (via `npx expo install`).
 
 **Interfaces:**
+
 - Consumes: `custom:fleetworks` provider + the `com.yellowpages.mobile://**` allow-list entry (Task 5).
 - Produces: native federated login on the yp Expo app.
 
 - [ ] **Step 1:** Confirm the RN Supabase client sets `detectSessionInUrl: false`, `persistSession: true`, `storage: AsyncStorage`. Add `expo-web-browser` + `expo-auth-session` via `npx expo install`. Confirm `scheme` in `app.config`.
 - [ ] **Step 2:** Implement `fleetworks-oauth.ts` (the documented Supabase Expo pattern):
   ```ts
-  import { makeRedirectUri } from 'expo-auth-session'
-  import * as QueryParams from 'expo-auth-session/build/QueryParams'
-  import * as WebBrowser from 'expo-web-browser'
-  import { supabase } from './supabase'
-  WebBrowser.maybeCompleteAuthSession()
-  const redirectTo = makeRedirectUri() // com.yellowpages.mobile://...
+  import { makeRedirectUri } from 'expo-auth-session';
+  import * as QueryParams from 'expo-auth-session/build/QueryParams';
+  import * as WebBrowser from 'expo-web-browser';
+  import { supabase } from './supabase';
+  WebBrowser.maybeCompleteAuthSession();
+  const redirectTo = makeRedirectUri(); // com.yellowpages.mobile://...
   export async function signInWithFleetworks() {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'custom:fleetworks', options: { redirectTo, skipBrowserRedirect: true } })
-    if (error) throw error
-    const res = await WebBrowser.openAuthSessionAsync(data.url!, redirectTo)
-    if (res.type !== 'success') return
-    const { params, errorCode } = QueryParams.getQueryParams(res.url)
-    if (errorCode) throw new Error(errorCode)
-    const { access_token, refresh_token } = params
-    if (!access_token) throw new Error('no token')
-    const { error: sErr } = await supabase.auth.setSession({ access_token, refresh_token })
-    if (sErr) throw sErr
+      provider: 'custom:fleetworks',
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    if (error) throw error;
+    const res = await WebBrowser.openAuthSessionAsync(data.url!, redirectTo);
+    if (res.type !== 'success') return;
+    const { params, errorCode } = QueryParams.getQueryParams(res.url);
+    if (errorCode) throw new Error(errorCode);
+    const { access_token, refresh_token } = params;
+    if (!access_token) throw new Error('no token');
+    const { error: sErr } = await supabase.auth.setSession({ access_token, refresh_token });
+    if (sErr) throw sErr;
   }
   ```
 - [ ] **Step 3:** Add the "Sign in with Fleetworks" button to `login.tsx` calling `signInWithFleetworks()` with try/catch/finally (mirror the Phase-1 mobile-parity error handling); password login unchanged.
@@ -204,6 +215,7 @@
 ---
 
 ## Self-review notes
+
 - **Spec coverage:** Zitadel deploy (T2) + config (T3) + SES (T1/T3) + hub UI fork (T4) + Supabase custom-OIDC + allow-list (T5) + web federation (T6) + mobile federation (T7) + verified-email linking gate (T8) + dual-mode/rollback (T6/T7/T9). Desktop is out of scope per the spec. ✅
 - **Unverified-at-plan-time items carried as explicit verify steps, not assumptions:** Render h2c (T2.3), Zitadel `email_verified` claim shape (T3.5), Supabase auto-link honoring `email_verified` (T8.4), mobile `setSession`-vs-PKCE (T7.2 uses the documented `setSession` path), Supabase `customProviders` admin API availability for the project's GoTrue version (T5.2).
 - **Sequencing:** T1→T2→T3 (Zitadel up + client creds) and T4 (hub UI) precede T5 (Supabase provider needs client_id/secret + callback URL), which precedes T6/T7 (apps need the provider), which precede T8 (linking test needs both surfaces). T8 is the correctness gate before declaring the pilot done.

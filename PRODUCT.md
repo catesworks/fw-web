@@ -29,7 +29,7 @@ Precise, quietly confident, built-by-operators-for-operators. Three words: **exa
 2. **One suite, one system — five accents.** The apex site establishes a single visual language (hero treatment, layout grammar, motion) that every one of the 5 app pages reuses, recolored to that app's own `accentColor` from `@fleet-works/suite-nav`. Consistency across pages is the pitch, not a limitation.
 3. **Respect the engineer's time.** Lead with what the product does and who it's for; no scroll-jacking, no filler copy, no unnecessary steps between "curious" and "open the app" or "request a demo."
 4. **Restraint over spectacle.** The existing design tokens (near-black ink, white paper, muted neutrals, system sans) already signal "serious tool" — new visual work should extend that restraint, not fight it with maximalist color or ornament.
-5. **Imagery replaces proof, not decoration.** Since screenshots are off the table, hero imagery must still communicate *what this actually does* (infrastructure/control-plane concepts rendered abstractly) rather than being generic mood art.
+5. **Imagery replaces proof, not decoration.** Since screenshots are off the table, hero imagery must still communicate _what this actually does_ (infrastructure/control-plane concepts rendered abstractly) rather than being generic mood art.
 
 ## Accessibility & Inclusion
 

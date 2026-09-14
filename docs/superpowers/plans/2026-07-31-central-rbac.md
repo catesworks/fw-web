@@ -25,9 +25,9 @@ Every statement below was read in source. Line numbers are as of 2026-07-31.
 **yellow-pages** — `apps/api/src/auth/middleware.ts:91-99`:
 
 ```ts
-const raw = app.groups ?? p.groups ?? app.teams ?? []
-const role = (app.role ?? p.role) as string | undefined
-const isAdmin = role === 'admin' || app.is_admin === true || p.is_admin === true
+const raw = app.groups ?? p.groups ?? app.teams ?? [];
+const role = (app.role ?? p.role) as string | undefined;
+const isAdmin = role === 'admin' || app.is_admin === true || p.is_admin === true;
 ```
 
 - Reads `app_metadata.groups`, `groups`, `app_metadata.teams`. **`roles` is read
@@ -44,12 +44,12 @@ const isAdmin = role === 'admin' || app.is_admin === true || p.is_admin === true
 **helmsman, rolodex, warden, chorus** — all four already resolve roles through
 the `@cogs/auth` plugin engine on **every request today**:
 
-| repo | import site | plugin set |
-|---|---|---|
-| rolodex | `apps/api/src/auth/middleware.ts:3-9` | `:60-70` |
-| helmsman | `apps/api/src/auth/middleware.ts:5-9` | `:55-60` |
-| warden | `apps/api/src/auth/middleware.ts:5-9` | `:70-75` |
-| chorus | `apps/api/src/auth/middleware.ts:5-9` | `:55-60` |
+| repo     | import site                           | plugin set |
+| -------- | ------------------------------------- | ---------- |
+| rolodex  | `apps/api/src/auth/middleware.ts:3-9` | `:60-70`   |
+| helmsman | `apps/api/src/auth/middleware.ts:5-9` | `:55-60`   |
+| warden   | `apps/api/src/auth/middleware.ts:5-9` | `:70-75`   |
+| chorus   | `apps/api/src/auth/middleware.ts:5-9` | `:55-60`   |
 
 Each constructs `new IdpTokenPlugin()` + `new DatabasePlugin(dbRoleLookup)` and
 calls `resolveRolesFromPlugins`. **So their role source is `IdpToken ∪ org_members`,
@@ -57,7 +57,7 @@ not `org_members` alone**, and Phase 3 is not greenfield wiring — it modifies 
 live auth path of four production apps.
 
 `org_members.role` is a **single `text` column**, unique per (org, user), in all
-four — so there is no representable *local deny*, only a single granted role.
+four — so there is no representable _local deny_, only a single granted role.
 
 ### 1.2 `@cogs/auth` — in production, and three behaviours differ from its docs
 
@@ -67,7 +67,7 @@ four — so there is no representable *local deny*, only a single granted role.
 - **Mapping is a union, not a precedence.** `mapping.ts:68-83` does
   `rules = [...dbRules, ...this.envRules]` and evaluates every rule into a `Set`.
   The file's own docstring says "DB rules take precedence over env rules" — the
-  docstring is wrong. Any design that relies on a DB rule *overriding* an env
+  docstring is wrong. Any design that relies on a DB rule _overriding_ an env
   rule is relying on behaviour that does not exist.
 - **Env var names are `ROLE_MAP_ADMIN` / `_CONTRIBUTOR` / `_VIEWER` / `_CI_AGENT`**
   (`config.ts:96-99`), not `ROLE_MAP_ORG_*`. Values are **comma-split**
@@ -110,7 +110,7 @@ const identity = await db.query.userExternalIdentities.findFirst({
     eq(userExternalIdentities.userId, member.userId),
     eq(userExternalIdentities.provider, target.provider),
   ),
-})
+});
 ```
 
 - A member with no matching row is counted `skipped_unmapped` and **never enters
@@ -126,7 +126,7 @@ const identity = await db.query.userExternalIdentities.findFirst({
 anything unrecognised to `additive`; `:264-278` writes `revoke_reported,
 applied: false` and **never calls `revokeGrant`**. Under the shipped default a
 removed grant persists indefinitely. Because the diff key is
-`principal|target|role` (`:148-152`), a *downgrade* emits grant(new) +
+`principal|target|role` (`:148-152`), a _downgrade_ emits grant(new) +
 revoke(old) — so under `additive` the user keeps **both** roles.
 
 **A clean run is not a silent run.** `reconcile.ts:164-172` writes a
@@ -164,13 +164,13 @@ import (`:794-829`) — but **not** on a change to `group_members`, which
   (`connector.ts:31-40`) and a throw fails the whole target run
   (`reconcile.ts:128-144`).
 - **Target mutations are unaudited.** `access_bindings` carries `createdBy` and
-  `confirmedBy`, and `access_changes` records what the reconciler *did* — but
+  `confirmedBy`, and `access_changes` records what the reconciler _did_ — but
   nothing records who changed a target's `config`, `enforcement` or `secret`.
   Verified: no `emitEvent` or audit write on the target routes, and zero hits for
   `updatedBy|changedBy|updated_by` across all 20 tables in
   `packages/db/src/schema.ts`. So the ledger captures effects, not causes. A
   credential swap in particular leaves no trace anywhere. Anything that treats
-  `access_changes` as *the* audit trail is overclaiming.
+  `access_changes` as _the_ audit trail is overclaiming.
 - `access_changes` rows are written in **one batch at the end**
   (`reconcile.ts:316-329`) while `applyGrant` calls happen one-by-one
   (`:209-236`). A crash mid-run leaves external writes with **no ledger rows**.
@@ -210,11 +210,11 @@ authorization source lets a user self-assert their own roles. The fix is for a
 Rolodex is described (including in its own CLAUDE.md) as an Active Directory
 **and Workday** cache. Today it is AD only:
 
-| source | file | state |
-|---|---|---|
-| LDAP / AD | `sync/ldap-source.ts` | 189 lines, real |
-| Workday | `sync/workday-source.ts` | **15-line stub**, `:11` throws `'Workday sync not yet implemented'` |
-| SCIM | `sync/scim-source.ts` | **15-line stub** |
+| source    | file                     | state                                                               |
+| --------- | ------------------------ | ------------------------------------------------------------------- |
+| LDAP / AD | `sync/ldap-source.ts`    | 189 lines, real                                                     |
+| Workday   | `sync/workday-source.ts` | **15-line stub**, `:11` throws `'Workday sync not yet implemented'` |
+| SCIM      | `sync/scim-source.ts`    | **15-line stub**                                                    |
 
 This explains the column gaps rather than treating them as separate bugs.
 `MappedUser` (`sync/source.ts:6-25`) carries exactly: `distinguishedName`
@@ -232,7 +232,7 @@ This explains the column gaps rather than treating them as separate bugs.
 - The one exception is `worker_status`, which the **soft-delete** path writes:
   when a DN present in `directory_users` no longer appears in the source snapshot,
   `run.ts:269` sets `workerStatus: 'Inactive'`. So it is an AD-vanished tombstone,
-  not an HR status — but it *is* a usable departure signal, and the join must
+  not an HR status — but it _is_ a usable departure signal, and the join must
   reject those rows.
 - Sync matches existing rows on `objectGuid`, then falls back to
   `distinguishedName` (`run.ts:120-130`).
@@ -276,7 +276,7 @@ deliverables rather than assumptions:
 
 Delivery stays **push-primary** — reconcile writes the claim; no rolodex
 dependency in the login path. That choice survived review. What did not survive
-is the belief that push is *safe by default*: its failure mode is silent
+is the belief that push is _safe by default_: its failure mode is silent
 (§1.3, `driftDetected` hole + `last_status` nobody watches), so observability is
 part of Phase 2, not a later nicety.
 
@@ -289,13 +289,13 @@ says nothing about the trustworthiness of the directory row keyed to it.
 
 What the sync actually gives us to key on, in descending order of stability:
 
-| key | populated? | stable across rename/move? | unique index? |
-|---|---|---|---|
-| `object_guid` | yes, nullable | **yes** — AD's immutable identifier | yes |
-| `distinguished_name` | yes, non-null | no — changes on OU move | yes |
-| `sam_account_name` | yes, nullable | mostly, but reusable after departure | yes |
-| `mail` | yes, nullable | no | **no** |
-| `employee_number` | **never** (Workday stub) | — | yes |
+| key                  | populated?               | stable across rename/move?           | unique index? |
+| -------------------- | ------------------------ | ------------------------------------ | ------------- |
+| `object_guid`        | yes, nullable            | **yes** — AD's immutable identifier  | yes           |
+| `distinguished_name` | yes, non-null            | no — changes on OU move              | yes           |
+| `sam_account_name`   | yes, nullable            | mostly, but reusable after departure | yes           |
+| `mail`               | yes, nullable            | no                                   | **no**        |
+| `employee_number`    | **never** (Workday stub) | —                                    | yes           |
 
 **Therefore:** `object_guid` is the identity anchor, `distinguished_name` the
 fallback — the same precedence the sync itself uses to match rows
@@ -309,8 +309,8 @@ human confirms, never an automatic join. The binding is then stored explicitly
 `object_guid` thereafter. Linking must refuse any row whose
 `worker_status = 'Inactive'`.
 
-This is the difference between *authentication* (the hub proved you control this
-mailbox) and *identification* (this is which employee you are). The first draft
+This is the difference between _authentication_ (the hub proved you control this
+mailbox) and _identification_ (this is which employee you are). The first draft
 conflated them; the hub can only ever supply the first.
 
 ---
@@ -344,7 +344,7 @@ conflated them; the hub can only ever supply the first.
 > **STATUS 2026-08-01 (updated).** The claim contract's §3 deliverable —
 > `FleetworksClaimPlugin` — is **BUILT, merged and published** in `@cogs/auth@0.4.0`
 > (`0241394`), and is stronger than §3 specified: it also rejects calendar-overflow
-> dates that `Date.parse` rolls *forward* into freshness, far-future stamps that
+> dates that `Date.parse` rolls _forward_ into freshness, far-future stamps that
 > never age out, and a `now()` returning `NaN`. Phase 3.1 consumes it; nothing in
 > Phase 0–2 needs to build it.
 >
@@ -405,7 +405,7 @@ Both pre-existing, both verified in source 2026-08-01.
 
 1. **Deprovisioning silently stops when a bound group empties.**
    `reconcile.ts:167` builds `uniqueTargets` from `desiredGrants`, then passes it
-   to `fetchActual` (`:170`). A bound group with zero *mapped* members contributes
+   to `fetchActual` (`:170`). A bound group with zero _mapped_ members contributes
    no `externalTarget`, so the platform's actual grants for that target are never
    fetched, never diffed, and **no revoke is ever emitted** — at exactly the moment
    revocation matters most. No test catches it because `fake-connector.ts:37-53`
@@ -415,7 +415,7 @@ Both pre-existing, both verified in source 2026-08-01.
    nothing revokes anyway, which is the only reason this is currently latent.
 
 2. **`POST /api/access/bindings` never validates `rolodexGroupId`.**
-   It org-scopes the *target* (`findTargetInOrg`, the Phase 0.2 fix) but inserts
+   It org-scopes the _target_ (`findTargetInOrg`, the Phase 0.2 fix) but inserts
    the group id on trust, and `directory_groups` has no org column — the directory
    is global. So any `org:admin` can bind **any** group in the directory to their
    own org's target, and can enumerate another tenant's group structure by FK
@@ -440,8 +440,8 @@ providers. That is a known, recorded gap, not a solved one. Closing it properly
 means teaching those connectors to tolerate a missing target without abandoning
 complete-or-throw — its own piece of work.
 
-**The transferable lesson:** the connectors' *code* was untouched, and their
-*behaviour* changed anyway, because a shared input widened. "Additive" has to be
+**The transferable lesson:** the connectors' _code_ was untouched, and their
+_behaviour_ changed anyway, because a shared input widened. "Additive" has to be
 judged at the behaviour boundary, not the diff.
 
 ### Phase 2.5 — enforcement staging is now a live decision, not a future one
@@ -473,7 +473,7 @@ change to the revoke path has to preserve them.
    `previewed && !membershipStale`; revokes required only `enforcement === 'full'`.
    Worse, `membershipStale` is itself `binding.previewed && mismatch`, so an
    UNCONFIRMED binding produced no hold and left revokes fully armed — meaning
-   `previewed = false` *disarmed* the only protection instead of applying it.
+   `previewed = false` _disarmed_ the only protection instead of applying it.
 3. **An empty desired state must not wipe the project.** One active binding forces
    a whole-project fetch, so if desired collapses to zero — identity desync,
    departed rows, a lost `user_external_identities` link — every claim in the
@@ -522,7 +522,7 @@ only when both of these are fixed.
    `revoked=[uuid-victim/org:futurerole]`.
 
 **The insight worth carrying:** authority to revoke was derived from a binding's
-*existence*. It has to be derived from its *productivity* — what it actually
+_existence_. It has to be derived from its _productivity_ — what it actually
 contributes to desired state on this run. Three gate rounds each found a new layer
 of this same mistake, which is why the interlock is code and not a comment.
 
@@ -673,6 +673,7 @@ not a config value.
    rolodex target until Phase 3.4 has settled self-targeting** — a target created
    here lets JWT-derived rolodex admins mutate the bindings that manufacture their
    own authority.
+
 2. Register the provider: zod enum, connector union, registry (§1.3).
 3. Implement `fetchActual` with real pagination over `auth.users`, and budget its
    rate-limit cost. Under `enforcement: 'full'`, a short-but-successful
@@ -688,10 +689,10 @@ not a config value.
    **MEASURED 2026-07-31 against GoTrue v2.192.0** (local stack, throwaway user,
    created and deleted). The semantics are exactly what the contract §1 assumed:
 
-   | level | behaviour | consequence |
-   |---|---|---|
-   | `app_metadata` top level | **shallow-merged** | sending only `fleetworks` left `provider`, `providers` and an unrelated `legacy_role` intact |
-   | the `fleetworks` subtree | **replaced wholesale** | a second write omitting `syncedAt` dropped it; `roles: []` genuinely emptied |
+   | level                    | behaviour              | consequence                                                                                  |
+   | ------------------------ | ---------------------- | -------------------------------------------------------------------------------------------- |
+   | `app_metadata` top level | **shallow-merged**     | sending only `fleetworks` left `provider`, `providers` and an unrelated `legacy_role` intact |
+   | the `fleetworks` subtree | **replaced wholesale** | a second write omitting `syncedAt` dropped it; `roles: []` genuinely emptied                 |
 
    So **no read-modify-write is needed**, and the cross-process race against
    yellow-pages' `/admin/users` does **not** materialise — the two writers own
@@ -706,6 +707,7 @@ not a config value.
    deep-merged), and `roles: []` genuinely emptied. Revocation therefore works
    under `full`. Still pin it in a test — a future GoTrue that deep-merged would
    silently stop revoking with no error anywhere.
+
 5. **DECIDED 2026-08-01: seed the fleetworks targets at `enforcement: 'full'`
    directly, five-wide.** Production holds zero `access_targets`, so there is
    nothing to promote — this is a seeding value, not a migration. The staged
@@ -723,6 +725,7 @@ not a config value.
    provider, so a bound group emptying still emits revokes; (b) `writeClaim`
    refusing to overwrite a `foreign` subtree, so a rollback cannot destroy a newer
    claim; and (c) the merge semantics now verified on hosted infrastructure.
+
 6. Move `access_changes` writes to accompany each `applyGrant`, so a crash cannot
    leave external writes unlogged. Set `driftDetected` on apply failure.
 7. Add an in-flight guard (advisory lock or a partial unique index on
@@ -756,11 +759,12 @@ Modifies the **live** auth path of four production apps (§1.1) using plugins wi
 
    **This is a hard rollout gate, not a nicety.** The plugin's adversarial gate
    confirmed that a writer bug emitting `roles: []` fleet-wide would degrade
-   every principal to `org:viewer` **silently**, and that *nothing else surfaces
-   it* — the orchestrator's floor makes a mass outage indistinguishable from a
+   every principal to `org:viewer` **silently**, and that _nothing else surfaces
+   it_ — the orchestrator's floor makes a mass outage indistinguishable from a
    correct mass downgrade. It fails closed, so it is safe rather than dangerous,
    but it is invisible. Wire `onReject` to a counter in all four apps **before**
    flipping the toggle, not after.
+
 2. Configure `ROLE_MAP_ADMIN` etc. — and note that DNs cannot be expressed in a
    comma-split env var, so map on group **names**, or supply a `DbMappingLoader`.
 3. Precedence is a **union**, floored at `org:viewer`. Local `org_members` grants
@@ -795,10 +799,11 @@ Modifies the **live** auth path of four production apps (§1.1) using plugins wi
    3. Then gate at contributor-or-above.
 
    Related, and a prerequisite for (2): `apps/web/src/hooks/use-roles.ts:8-13`
-   already implements a *ranked* `hasMinimumRole` while the API is flat — so UI
+   already implements a _ranked_ `hasMinimumRole` while the API is flat — so UI
    and API authorization can silently diverge — and in that ranking **`ci:agent`
    (4) outranks `org:admin` (3)**, meaning the default service-account role is
    treated as super-admin by every UI check. Reconcile the two rankings.
+
 4. Migrate existing yellow-pages admins and `groups` values: backfill directory
    groups and bindings **before** retiring the manual path, never after.
 

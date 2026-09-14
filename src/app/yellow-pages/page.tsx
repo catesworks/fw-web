@@ -1,17 +1,17 @@
-import type { CSSProperties } from 'react'
-import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav'
-import { HeroVisual } from '@/components/HeroVisual'
-import styles from './page.module.css'
+import type { CSSProperties } from 'react';
+import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav';
+import { HeroVisual } from '@/components/HeroVisual';
+import styles from './page.module.css';
 
 function requireSuiteApp(id: string): SuiteApp {
-  const app = getSuiteApp(id)
+  const app = getSuiteApp(id);
   if (!app) {
-    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`)
+    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`);
   }
-  return app
+  return app;
 }
 
-const YELLOW_PAGES_APP = requireSuiteApp('yellow-pages')
+const YELLOW_PAGES_APP = requireSuiteApp('yellow-pages');
 
 export default function YellowPagesPage() {
   return (
@@ -62,5 +62,5 @@ export default function YellowPagesPage() {
         <HeroVisual accentColor={YELLOW_PAGES_APP.accentColor} activeId="yellow-pages" />
       </div>
     </main>
-  )
+  );
 }

@@ -1,21 +1,24 @@
-import type { CSSProperties } from 'react'
-import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav'
-import { HeroVisual } from '@/components/HeroVisual'
-import styles from './page.module.css'
+import type { CSSProperties } from 'react';
+import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav';
+import { HeroVisual } from '@/components/HeroVisual';
+import styles from './page.module.css';
 
 function requireSuiteApp(id: string): SuiteApp {
-  const app = getSuiteApp(id)
+  const app = getSuiteApp(id);
   if (!app) {
-    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`)
+    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`);
   }
-  return app
+  return app;
 }
 
-const CHORUS_APP = requireSuiteApp('chorus')
+const CHORUS_APP = requireSuiteApp('chorus');
 
 export default function ChorusPage() {
   return (
-    <main className={styles.hero} style={{ '--chorus-accent': CHORUS_APP.accentColor } as CSSProperties}>
+    <main
+      className={styles.hero}
+      style={{ '--chorus-accent': CHORUS_APP.accentColor } as CSSProperties}
+    >
       <div className={styles.grid}>
         <div>
           <h1 className={styles.headline}>DNS, opt-in by default.</h1>
@@ -27,8 +30,7 @@ export default function ChorusPage() {
           </p>
           <ul className={styles.features}>
             <li className={styles.featureItem}>
-              Full CRUD over A/CNAME/TXT/SRV records and domains, org-scoped, via API and
-              dashboard.
+              Full CRUD over A/CNAME/TXT/SRV records and domains, org-scoped, via API and dashboard.
             </li>
             <li className={styles.featureItem}>
               chmod-style permissions (9-bit mode, owner/group/other) on every record &mdash;
@@ -57,5 +59,5 @@ export default function ChorusPage() {
         <HeroVisual accentColor={CHORUS_APP.accentColor} activeId="chorus" />
       </div>
     </main>
-  )
+  );
 }

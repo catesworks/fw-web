@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import type { SubmitEvent } from 'react'
+import { useState } from 'react';
+import type { SubmitEvent } from 'react';
 
 interface FormState {
-  name: string
-  email: string
-  company: string
-  message: string
+  name: string;
+  email: string;
+  company: string;
+  message: string;
 }
 
 const initialState: FormState = {
@@ -15,68 +15,68 @@ const initialState: FormState = {
   email: '',
   company: '',
   message: '',
-}
+};
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error'
+type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error';
 
 function validate(form: FormState): string | null {
   if (form.name.trim().length === 0) {
-    return 'Name is required.'
+    return 'Name is required.';
   }
   if (!EMAIL_PATTERN.test(form.email.trim())) {
-    return 'Enter a valid email address.'
+    return 'Enter a valid email address.';
   }
-  return null
+  return null;
 }
 
 export default function RequestDemoPage() {
-  const [form, setForm] = useState<FormState>(initialState)
-  const [status, setStatus] = useState<SubmitStatus>('idle')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [form, setForm] = useState<FormState>(initialState);
+  const [status, setStatus] = useState<SubmitStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleChange =
     (field: keyof FormState) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setForm((prev) => ({ ...prev, [field]: event.target.value }))
-    }
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    const validationError = validate(form)
+    const validationError = validate(form);
     if (validationError) {
-      setStatus('error')
-      setErrorMessage(validationError)
-      return
+      setStatus('error');
+      setErrorMessage(validationError);
+      return;
     }
 
-    setStatus('submitting')
-    setErrorMessage(null)
+    setStatus('submitting');
+    setErrorMessage(null);
 
     try {
       const response = await fetch('/api/demo-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
-      })
+      });
 
-      const data = (await response.json()) as { error?: string }
+      const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        setStatus('error')
-        setErrorMessage(data.error ?? 'Something went wrong. Please try again.')
-        return
+        setStatus('error');
+        setErrorMessage(data.error ?? 'Something went wrong. Please try again.');
+        return;
       }
 
-      setStatus('success')
-      setForm(initialState)
+      setStatus('success');
+      setForm(initialState);
     } catch {
-      setStatus('error')
-      setErrorMessage('Could not reach the server. Please try again.')
+      setStatus('error');
+      setErrorMessage('Could not reach the server. Please try again.');
     }
-  }
+  };
 
   if (status === 'success') {
     return (
@@ -84,7 +84,7 @@ export default function RequestDemoPage() {
         <h1>Thanks for reaching out</h1>
         <p>We received your demo request and will be in touch shortly.</p>
       </main>
-    )
+    );
   }
 
   return (
@@ -134,10 +134,7 @@ export default function RequestDemoPage() {
         </div>
 
         <div style={{ marginBottom: 'var(--fw-space-4)' }}>
-          <label
-            htmlFor="company"
-            style={{ display: 'block', marginBottom: 'var(--fw-space-1)' }}
-          >
+          <label htmlFor="company" style={{ display: 'block', marginBottom: 'var(--fw-space-1)' }}>
             Company
           </label>
           <input
@@ -156,10 +153,7 @@ export default function RequestDemoPage() {
         </div>
 
         <div style={{ marginBottom: 'var(--fw-space-5)' }}>
-          <label
-            htmlFor="message"
-            style={{ display: 'block', marginBottom: 'var(--fw-space-1)' }}
-          >
+          <label htmlFor="message" style={{ display: 'block', marginBottom: 'var(--fw-space-1)' }}>
             Message
           </label>
           <textarea
@@ -200,5 +194,5 @@ export default function RequestDemoPage() {
         </button>
       </form>
     </main>
-  )
+  );
 }

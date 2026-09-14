@@ -5,24 +5,24 @@ Fleetworks product app federates to. Products keep their own Supabase Auth as
 the session authority; Zitadel is the upstream OIDC identity provider they
 register as a **Custom OIDC provider** (`custom:fleetworks`).
 
-| Piece | Where | Managed by |
-| --- | --- | --- |
-| Zitadel server | Fly.io app `fleetworks-zitadel` (region `sjc`) | `deploy/zitadel/fly.toml` |
-| Postgres | Fly Postgres cluster `fleetworks-zitadel-db` | `fly postgres` (unmanaged) |
-| `id.fleetworks.dev` CNAME | Cloudflare | `infra/hub-dns.tf` (`hub_records`) |
-| Sending domain `auth.id.fleetworks.dev` | AWS SES us-east-2 | `infra/ses.tf`, `infra/dns.tf`, `infra/iam.tf` |
-| Zitadel config (project, OIDC apps, SMTP, branding) | Zitadel | `infra/zitadel.tf` |
+| Piece                                               | Where                                          | Managed by                                     |
+| --------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------- |
+| Zitadel server                                      | Fly.io app `fleetworks-zitadel` (region `sjc`) | `deploy/zitadel/fly.toml`                      |
+| Postgres                                            | Fly Postgres cluster `fleetworks-zitadel-db`   | `fly postgres` (unmanaged)                     |
+| `id.fleetworks.dev` CNAME                           | Cloudflare                                     | `infra/hub-dns.tf` (`hub_records`)             |
+| Sending domain `auth.id.fleetworks.dev`             | AWS SES us-east-2                              | `infra/ses.tf`, `infra/dns.tf`, `infra/iam.tf` |
+| Zitadel config (project, OIDC apps, SMTP, branding) | Zitadel                                        | `infra/zitadel.tf`                             |
 
 ## The h2c finding — why this is on Fly and not Render
 
 Zitadel requires a reverse proxy that forwards **HTTP/2 to the origin** (h2c).
 The hub was first deployed on Render (`zitadel-lw5q.onrender.com`) and measured:
 
-| Transport | Render | Fly |
-| --- | --- | --- |
-| OIDC discovery / authorize / token (plain HTTPS) | ✅ 200 | ✅ 200 |
-| Zitadel console (gRPC-Web) | ✅ 21/21 calls, `grpc-status: 0` | ✅ |
-| Connect-RPC over HTTP/1.1 | ✅ structured 401 JSON | ✅ |
+| Transport                                          | Render                                         | Fly                                    |
+| -------------------------------------------------- | ---------------------------------------------- | -------------------------------------- |
+| OIDC discovery / authorize / token (plain HTTPS)   | ✅ 200                                         | ✅ 200                                 |
+| Zitadel console (gRPC-Web)                         | ✅ 21/21 calls, `grpc-status: 0`               | ✅                                     |
+| Connect-RPC over HTTP/1.1                          | ✅ structured 401 JSON                         | ✅                                     |
 | **Native gRPC** (`content-type: application/grpc`) | ❌ HTTP 404 `{"code":5,"message":"Not Found"}` | ✅ HTTP/2 200 + `Grpc-Status` trailers |
 
 Render's edge terminates HTTP/2 and speaks HTTP/1.1 to the container, so a
@@ -61,12 +61,12 @@ unable to set instance using origin &{account.fleetworks.dev account.fleetworks.
 ```
 
 `account.fleetworks.dev` must be registered as an **instance domain** (System
-API `AddDomain`). Things that do *not* fix it, tried and measured:
+API `AddDomain`). Things that do _not_ fix it, tried and measured:
 
 - **Trusted domains** (`POST /admin/v1/trusted_domains`) — different concept;
   the instance lookup still fails.
 - **`CUSTOM_REQUEST_HEADERS=Host:id.fleetworks.dev`** — in `apps/login/src/proxy.ts`
-  those headers are applied only on the *proxied* paths (`/oauth/`, `/oidc/`,
+  those headers are applied only on the _proxied_ paths (`/oauth/`, `/oidc/`,
   `/.well-known/`, …), after the early return for login pages, so login routes
   never see them.
 - Restarting Zitadel to clear the instance cache.
@@ -91,14 +91,14 @@ node scripts/zitadel-system-api.mjs POST /system/v1/instances/<instanceId>/domai
 None are committed. They live in Fly secrets, with local gitignored copies under
 `infra/` for recovery:
 
-| Secret | Fly secret name | Local copy |
-| --- | --- | --- |
-| Master key (32 chars, **immutable** — losing it loses all encrypted data) | `ZITADEL_MASTERKEY` | `infra/zitadel-masterkey.txt` |
-| Zitadel DB user password | `ZITADEL_DATABASE_POSTGRES_USER_PASSWORD` | `infra/zitadel-db-password.txt` |
-| Postgres superuser password | `ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD` | `infra/fly-postgres-superuser.txt` |
-| First-instance admin password | `ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD` | `infra/zitadel-admin-password.txt` |
-| Terraform machine-user JSON key | — | `infra/zitadel-provider-key.json` |
-| Login v2 client PAT | — | `infra/zitadel-login-client.pat` |
+| Secret                                                                    | Fly secret name                            | Local copy                         |
+| ------------------------------------------------------------------------- | ------------------------------------------ | ---------------------------------- |
+| Master key (32 chars, **immutable** — losing it loses all encrypted data) | `ZITADEL_MASTERKEY`                        | `infra/zitadel-masterkey.txt`      |
+| Zitadel DB user password                                                  | `ZITADEL_DATABASE_POSTGRES_USER_PASSWORD`  | `infra/zitadel-db-password.txt`    |
+| Postgres superuser password                                               | `ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD` | `infra/fly-postgres-superuser.txt` |
+| First-instance admin password                                             | `ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD` | `infra/zitadel-admin-password.txt` |
+| Terraform machine-user JSON key                                           | —                                          | `infra/zitadel-provider-key.json`  |
+| Login v2 client PAT                                                       | —                                          | `infra/zitadel-login-client.pat`   |
 
 > **Put `ZITADEL_MASTERKEY` in a password manager.** It cannot be rotated and
 > without it the database is unreadable.
@@ -215,11 +215,11 @@ assert an unverified email, re-run this guard before trusting it.
 
 Measured against the live project:
 
-| Lever | Effect on federated `/authorize` | Effect on password login |
-| --- | --- | --- |
-| `PUT /auth/v1/admin/custom-providers/custom:fleetworks` with `enabled:false` | **400 — blocked** | none |
-| `custom_oauth_enabled: false` (Management API) | **no effect — still 302s to the hub** | none |
-| Hide the button in the app | no server-side effect | none |
+| Lever                                                                        | Effect on federated `/authorize`      | Effect on password login |
+| ---------------------------------------------------------------------------- | ------------------------------------- | ------------------------ |
+| `PUT /auth/v1/admin/custom-providers/custom:fleetworks` with `enabled:false` | **400 — blocked**                     | none                     |
+| `custom_oauth_enabled: false` (Management API)                               | **no effect — still 302s to the hub** | none                     |
+| Hide the button in the app                                                   | no server-side effect                 | none                     |
 
 **`custom_oauth_enabled` is not a kill switch.** The provider's own `enabled`
 flag is. Note the update is keyed by identifier (`custom:fleetworks`), not the

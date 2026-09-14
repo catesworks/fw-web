@@ -13,23 +13,24 @@ downstream either writes or parses this, so it is specified before any of it.
 ```jsonc
 // auth.users.raw_app_meta_data
 {
-  "provider":  "custom:fleetworks",   // Supabase-owned, never touched by us
+  "provider": "custom:fleetworks", // Supabase-owned, never touched by us
   "providers": ["email", "custom:fleetworks"],
-  "fleetworks": {                     // rolodex-owned subtree, sole writer
+  "fleetworks": {
+    // rolodex-owned subtree, sole writer
     "v": 1,
-    "roles": ["org:contributor"],     // AuthRole[] only
+    "roles": ["org:contributor"], // AuthRole[] only
     "source": "rolodex",
-    "syncedAt": "2026-07-31T18:04:22Z"
-  }
+    "syncedAt": "2026-07-31T18:04:22Z",
+  },
 }
 ```
 
-| field | rule |
-|---|---|
-| path | `app_metadata.fleetworks` |
-| `v` | schema version, integer. Unknown version ⇒ **ignore the whole subtree** |
-| `roles` | `AuthRole[]`. Anything not in the vocabulary is dropped, not passed through |
-| `source` | provenance. Only `"rolodex"` is honoured today |
+| field      | rule                                                                            |
+| ---------- | ------------------------------------------------------------------------------- |
+| path       | `app_metadata.fleetworks`                                                       |
+| `v`        | schema version, integer. Unknown version ⇒ **ignore the whole subtree**         |
+| `roles`    | `AuthRole[]`. Anything not in the vocabulary is dropped, not passed through     |
+| `source`   | provenance. Only `"rolodex"` is honoured today                                  |
 | `syncedAt` | RFC 3339 with an **explicit** offset (`Z` or `±HH:MM`). Absent ⇒ treat as stale |
 
 **`syncedAt` must carry an explicit offset, and readers must enforce it.**
@@ -46,12 +47,12 @@ formats `Date.parse` also swallows (`"Jul 31 2026 20:00:00 GMT"` parses fine).
 
 **Replacement, not union.** `roles` is written wholesale each reconcile. An array
 union can never revoke — this is the same defect as `enforcement: 'additive'`,
-one layer up. The *subtree* is replaced; the surrounding `app_metadata` object is
+one layer up. The _subtree_ is replaced; the surrounding `app_metadata` object is
 merged, so `provider` / `providers` survive.
 
 **Staleness.** A consumer that sees `syncedAt` older than **3× the reconcile
 period** (3h at the agreed hourly floor) must **ignore the subtree entirely** and
-fall back to local `org_members`. Note what this deliberately does *not* say: it
+fall back to local `org_members`. Note what this deliberately does _not_ say: it
 does not floor the principal at `org:viewer`. Flooring would strip a
 locally-granted admin during a rolodex outage, which is exactly the failure the
 union precedence exists to prevent.
@@ -135,12 +136,12 @@ the reconcile loop cannot write.
 Every app that reads roles must be updated in the same change set, because a
 missing plugin silently degrades to `org:viewer` rather than failing:
 
-| repo | file | today |
-|---|---|---|
-| rolodex | `apps/api/src/auth/middleware.ts:60-70` | `IdpToken` + `Database` |
-| helmsman | `apps/api/src/auth/middleware.ts:55-60` | `IdpToken` + `Database` |
-| warden | `apps/api/src/auth/middleware.ts:70-75` | `IdpToken` + `Database` |
-| chorus | `apps/api/src/auth/middleware.ts:55-60` | `IdpToken` + `Database` |
+| repo         | file                                    | today                              |
+| ------------ | --------------------------------------- | ---------------------------------- |
+| rolodex      | `apps/api/src/auth/middleware.ts:60-70` | `IdpToken` + `Database`            |
+| helmsman     | `apps/api/src/auth/middleware.ts:55-60` | `IdpToken` + `Database`            |
+| warden       | `apps/api/src/auth/middleware.ts:70-75` | `IdpToken` + `Database`            |
+| chorus       | `apps/api/src/auth/middleware.ts:55-60` | `IdpToken` + `Database`            |
 | yellow-pages | `apps/api/src/auth/middleware.ts:91-99` | bespoke `claimsToRbac`, no plugins |
 
 yellow-pages is the odd one out and is Phase 1's job.
@@ -158,7 +159,7 @@ it. That is a behaviour change to a live auth path and wants its own verificatio
 All five settled. This doc is now the contract, not a proposal.
 
 1. **Path is `app_metadata.fleetworks`**, shape per §1.
-2. **Staleness = 3× the reconcile period, and stale means *ignore the subtree*** —
+2. **Staleness = 3× the reconcile period, and stale means _ignore the subtree_** —
    fall back to local `org_members`. Explicitly **not** a demotion to
    `org:viewer`: flooring would strip a locally-granted admin during a rolodex
    outage, contradicting the union precedence that exists to prevent exactly

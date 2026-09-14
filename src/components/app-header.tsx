@@ -1,4 +1,4 @@
-import { AppSwitcher } from '@fleet-works/ui'
+import { AppSwitcher } from '@fleet-works/ui';
 
 /** Shared site header rendered once in the root layout — inherited by every page. */
 export function AppHeader() {
@@ -11,5 +11,5 @@ export function AppHeader() {
     >
       <AppSwitcher currentId="fleetworks" />
     </header>
-  )
+  );
 }

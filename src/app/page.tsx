@@ -1,18 +1,18 @@
-import type { CSSProperties } from 'react'
-import { getSuiteApp, otherSuiteApps, type SuiteApp } from '@fleet-works/suite-nav'
-import { HeroVisual } from '@/components/HeroVisual'
-import styles from './page.module.css'
+import type { CSSProperties } from 'react';
+import { getSuiteApp, otherSuiteApps, type SuiteApp } from '@fleet-works/suite-nav';
+import { HeroVisual } from '@/components/HeroVisual';
+import styles from './page.module.css';
 
 function requireSuiteApp(id: string): SuiteApp {
-  const app = getSuiteApp(id)
+  const app = getSuiteApp(id);
   if (!app) {
-    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`)
+    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`);
   }
-  return app
+  return app;
 }
 
-const HOME_APP = requireSuiteApp('fleetworks')
-const SUITE_APPS = otherSuiteApps('fleetworks')
+const HOME_APP = requireSuiteApp('fleetworks');
+const SUITE_APPS = otherSuiteApps('fleetworks');
 
 export default function HomePage() {
   return (
@@ -52,11 +52,11 @@ export default function HomePage() {
             underneath.
           </p>
           <p className={styles.narrativeBody}>
-            Register a service in Yellow Pages, and its DNS in Chorus, its deployments in
-            Helmsman, its cloud accounts in Warden, and its owning team&rsquo;s directory data in
-            Rolodex all resolve back to the same source of truth &mdash; one consistent
-            unix-style permission model (owner/group/other) and org-scoping throughout, instead
-            of five different bespoke admin panels.
+            Register a service in Yellow Pages, and its DNS in Chorus, its deployments in Helmsman,
+            its cloud accounts in Warden, and its owning team&rsquo;s directory data in Rolodex all
+            resolve back to the same source of truth &mdash; one consistent unix-style permission
+            model (owner/group/other) and org-scoping throughout, instead of five different bespoke
+            admin panels.
           </p>
         </div>
       </section>
@@ -95,5 +95,5 @@ export default function HomePage() {
         </div>
       </section>
     </>
-  )
+  );
 }

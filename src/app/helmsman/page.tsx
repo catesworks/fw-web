@@ -1,17 +1,17 @@
-import type { CSSProperties } from 'react'
-import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav'
-import { HeroVisual } from '@/components/HeroVisual'
-import styles from './page.module.css'
+import type { CSSProperties } from 'react';
+import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav';
+import { HeroVisual } from '@/components/HeroVisual';
+import styles from './page.module.css';
 
 function requireSuiteApp(id: string): SuiteApp {
-  const app = getSuiteApp(id)
+  const app = getSuiteApp(id);
   if (!app) {
-    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`)
+    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`);
   }
-  return app
+  return app;
 }
 
-const HELMSMAN_APP = requireSuiteApp('helmsman')
+const HELMSMAN_APP = requireSuiteApp('helmsman');
 
 export default function HelmsmanPage() {
   return (
@@ -69,5 +69,5 @@ export default function HelmsmanPage() {
         <HeroVisual accentColor={HELMSMAN_APP.accentColor} activeId="helmsman" />
       </div>
     </main>
-  )
+  );
 }

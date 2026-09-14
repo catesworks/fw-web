@@ -1,23 +1,23 @@
-import type { CSSProperties } from 'react'
-import type { Metadata } from 'next'
-import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav'
-import styles from './page.module.css'
+import type { CSSProperties } from 'react';
+import type { Metadata } from 'next';
+import { getSuiteApp, type SuiteApp } from '@fleet-works/suite-nav';
+import styles from './page.module.css';
 
 function requireSuiteApp(id: string): SuiteApp {
-  const app = getSuiteApp(id)
+  const app = getSuiteApp(id);
   if (!app) {
-    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`)
+    throw new Error(`@fleet-works/suite-nav is missing its "${id}" entry`);
   }
-  return app
+  return app;
 }
 
-const HELMSMAN_APP = requireSuiteApp('helmsman')
+const HELMSMAN_APP = requireSuiteApp('helmsman');
 
 export const metadata: Metadata = {
   title: 'Cloud Agents',
   description:
     'Define an agent once, govern it once, run it on AWS or Azure — one permission model, one approval flow, one audit trail, one spend cap across both clouds.',
-}
+};
 
 const CAPABILITIES = [
   {
@@ -40,7 +40,7 @@ const CAPABILITIES = [
     title: 'Spend caps that refuse, not report',
     body: 'A per-organization ceiling that turns the next invocation away when it would cross the line — a control that stops spend, not a number you reconcile after the bill arrives.',
   },
-]
+];
 
 export default function CloudAgentsPage() {
   return (
@@ -314,5 +314,5 @@ export default function CloudAgentsPage() {
         </section>
       </div>
     </main>
-  )
+  );
 }

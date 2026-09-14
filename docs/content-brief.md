@@ -61,6 +61,7 @@ service, team, and cloud account in the org, and the backbone the rest of the
 Fleetworks suite links back to.
 
 **Features:**
+
 - Full CRUD over six core resources — Service (~93 fields), Agent, Team, AWS
   Account, Azure Account, and Label — via REST API and admin web UI.
 - chmod-style RBAC (owner/group/other, 9-bit mode) on every resource, with
@@ -85,6 +86,7 @@ Directory and Workday user/group data — plus SSH keys and outbound access
 provisioning — behind one API.
 
 **Features:**
+
 - GET lookups for users and groups by sAMAccountName, distinguishedName, DSS
   username, employee number, or objectGUID, plus name/email/company search.
 - Nested-group directory with member counts, and SSH public key lookup by
@@ -109,6 +111,7 @@ unix-style permissions, a public directory for records teams choose to expose,
 and webhook-driven automation.
 
 **Features:**
+
 - Full CRUD over A/CNAME/TXT/SRV records and domains, org-scoped, via API and
   dashboard.
 - chmod-style permissions (9-bit mode, owner/group/other) on every record —
@@ -136,6 +139,7 @@ applications, CI/CD pipelines, cluster deployments, and agents/multi-agent
 processes, all under one org-scoped RBAC and audit model.
 
 **Features:**
+
 - Application lifecycle management (quotas, namespace ownership, compliance
   controls) plus CI/CD pipeline, run, and deployment tracking across clusters.
 - Agents as a governed resource: define, invoke (real OpenAI/Claude runtimes,
@@ -158,6 +162,7 @@ workspaces, AWS/Azure accounts, and the services that own them, with
 org-scoped reads, guarded writes, and a deterministic config review.
 
 **Features:**
+
 - Workspace CRUD (create, list, update VCS provider/tenant) plus a
   deterministic config review that surfaces findings per workspace.
 - Org-scoped visibility into the AWS and Azure accounts and services an org

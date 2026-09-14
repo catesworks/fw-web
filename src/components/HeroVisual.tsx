@@ -1,5 +1,5 @@
-import { otherSuiteApps } from '@fleet-works/suite-nav'
-import styles from './HeroVisual.module.css'
+import { otherSuiteApps } from '@fleet-works/suite-nav';
+import styles from './HeroVisual.module.css';
 
 /**
  * Short instrument-style labels for the diagram's satellite nodes. Purely a
@@ -12,26 +12,26 @@ const SHORT_LABEL: Record<string, string> = {
   chorus: 'CHR',
   helmsman: 'HLM',
   warden: 'WRD',
-}
+};
 
-const HUB_ID = 'fleetworks'
-const CENTER = 180
-const RADIUS = 140
+const HUB_ID = 'fleetworks';
+const CENTER = 180;
+const RADIUS = 140;
 
 /** Evenly spaces `count` points around a circle, starting at the top (12 o'clock). */
 function pentagonPoint(index: number, count: number) {
-  const angle = (-90 + (360 / count) * index) * (Math.PI / 180)
+  const angle = (-90 + (360 / count) * index) * (Math.PI / 180);
   return {
     x: Math.round(CENTER + RADIUS * Math.cos(angle)),
     y: Math.round(CENTER + RADIUS * Math.sin(angle)),
-  }
+  };
 }
 
 export interface HeroVisualProps {
   /** Brand accent for this page — the diagram's single live signal (DESIGN.md's One Light Rule). */
-  accentColor: string
+  accentColor: string;
   /** `suite-nav` id of the app to highlight as the active node/route. Omit for a neutral, hub-only view. */
-  activeId?: string
+  activeId?: string;
 }
 
 /**
@@ -43,15 +43,12 @@ export interface HeroVisualProps {
  * only `accentColor` and `activeId` change per page.
  */
 export function HeroVisual({ accentColor, activeId }: HeroVisualProps) {
-  const satellites = otherSuiteApps(HUB_ID)
-  const activeApp = satellites.find((app) => app.id === activeId)
-  const activeIndex = satellites.findIndex((app) => app.id === activeId)
+  const satellites = otherSuiteApps(HUB_ID);
+  const activeApp = satellites.find((app) => app.id === activeId);
+  const activeIndex = satellites.findIndex((app) => app.id === activeId);
 
   return (
-    <div
-      className={styles.diagram}
-      style={{ '--hero-accent': accentColor } as React.CSSProperties}
-    >
+    <div className={styles.diagram} style={{ '--hero-accent': accentColor } as React.CSSProperties}>
       <div className={styles.diagramInner}>
         <svg
           className={styles.svg}
@@ -64,8 +61,8 @@ export function HeroVisual({ accentColor, activeId }: HeroVisualProps) {
           }
         >
           {satellites.map((app, i) => {
-            const { x, y } = pentagonPoint(i, satellites.length)
-            const isActive = app.id === activeId
+            const { x, y } = pentagonPoint(i, satellites.length);
+            const isActive = app.id === activeId;
             return (
               <line
                 key={`line-${app.id}`}
@@ -75,13 +72,13 @@ export function HeroVisual({ accentColor, activeId }: HeroVisualProps) {
                 x2={x}
                 y2={y}
               />
-            )
+            );
           })}
           <circle className={styles.hub} cx={CENTER} cy={CENTER} r={16} />
           {satellites.map((app, i) => {
-            const { x, y } = pentagonPoint(i, satellites.length)
-            const isActive = app.id === activeId
-            const labelY = y < CENTER ? y - 14 : y + 22
+            const { x, y } = pentagonPoint(i, satellites.length);
+            const isActive = app.id === activeId;
+            const labelY = y < CENTER ? y - 14 : y + 22;
             return (
               <g key={app.id}>
                 <circle
@@ -94,7 +91,7 @@ export function HeroVisual({ accentColor, activeId }: HeroVisualProps) {
                   {SHORT_LABEL[app.id] ?? app.id.slice(0, 3).toUpperCase()}
                 </text>
               </g>
-            )
+            );
           })}
         </svg>
       </div>
@@ -104,5 +101,5 @@ export function HeroVisual({ accentColor, activeId }: HeroVisualProps) {
         </span>
       ) : null}
     </div>
-  )
+  );
 }

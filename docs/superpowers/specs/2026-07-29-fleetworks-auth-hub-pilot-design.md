@@ -8,18 +8,18 @@
 Phase 1 (done): all 5 fleetworks product apps (yellow-pages, warden, helmsman, rolodex,
 chorus) ship self-serve auth on their **own isolated Supabase (GoTrue) SSR** projects;
 apex (fleetworks-web) is marketing-only. Each app's GoTrue was deliberately kept so it
-*can* later federate to a central IdP.
+_can_ later federate to a central IdP.
 
 Phase 2 goal (all four wanted): a shared **Fleetworks account hub** giving (1) one shared
 identity across apps + apex, (2) session SSO, (3) central user/role/org admin, and (4)
 inbound enterprise BYO-IdP — while every app retains the ability to use **either** its own
-per-app auth **or** the shared hub (multi-IdP coexistence). Federation is always *added*
+per-app auth **or** the shared hub (multi-IdP coexistence). Federation is always _added_
 to an app, never replaces its password login.
 
 **Central IdP decision:** Zitadel, **self-hosted on Render** (Apache-2.0, no per-user fees;
 first-class orgs/projects/roles; OIDC **and** SAML provider; inbound IdP federation).
 Rejected: a dedicated Supabase instance as the hub — GoTrue is a relying party, not an
-OIDC/SAML *provider*, so Supabase cannot BE the IdP other Supabases federate to. Managed
+OIDC/SAML _provider_, so Supabase cannot BE the IdP other Supabases federate to. Managed
 alternatives (Cognito/Zitadel-Cloud/WorkOS) rejected for per-user cost + (Cognito) weak
 central org/role modeling; ops/security burden of self-hosting accepted.
 
@@ -44,6 +44,7 @@ central org/role modeling; ops/security burden of self-hosting accepted.
 ## Goals & non-goals (this sub-project)
 
 **Goals**
+
 - Stand up Zitadel self-hosted on Render at `id.fleetworks.dev`, SES-backed email, as the Fleetworks IdP.
 - The custom, branded hub login/signup UI at `account.fleetworks.dev` = a **fork of Zitadel's first-party Login v2 (Next.js, MIT)**, re-themed with Fleetworks branding (gold Boxes mark/colors) and self-hosted (its own Render service, or under the apex domain). It already implements the Session-API login/signup/verify/reset/MFA flows against Zitadel; we own + brand it but don't rebuild the flows. This one hub UI is the login surface for **all** client surfaces (opened in the system browser on native). [DECIDED 2026-07-30]
 - yellow-pages gains a "Sign in with Fleetworks" (generic-OIDC) option next to its existing password login, on **both its web and its mobile (Expo) surface**. Password login untouched on both.
@@ -51,6 +52,7 @@ central org/role modeling; ops/security burden of self-hosting accepted.
 - Prove the full round-trip e2e on yellow-pages, **web and mobile**.
 
 **Non-goals (deferred to later sub-projects)**
+
 - The other 4 apps + apex federation (#2); cross-app session SSO (#3); central RBAC/role claims (#4); enterprise BYO-IdP (#5); full account-hub/app-launcher UI (#6).
 - Migrating existing Phase-1 users into Zitadel en masse (linking happens lazily on first federated login).
 - **Desktop (Tauri) federation** — acknowledged as a third surface (same OIDC-provider config on the shared Supabase project; native system-browser + deep-link/loopback flow like mobile). Sequenced as a fast-follow after web+mobile prove out, unless pulled in.
@@ -76,19 +78,22 @@ central org/role modeling; ops/security burden of self-hosting accepted.
 ## Client surfaces (critical — each app has three)
 
 Every fleetworks app ships **web (Next SSR), mobile (Expo, native `@supabase/supabase-js`), and desktop (Tauri)** — all three talk to the **same single Supabase project** for that app. Consequences:
+
 - The Zitadel generic-OIDC provider is configured **once on the app's Supabase project** and is therefore available to all three clients.
 - Account-linking-by-verified-email happens at the Supabase-user level, so it's identical no matter which surface a user first federates from — one yp account, reachable from web, phone, or desktop.
-- The federation *interaction* differs by surface: web = server-side redirect; native (mobile/desktop) = OAuth **PKCE** in the system browser + **deep-link** return. Mobile today confirms email in-browser and deferred the deep-link screen — federation *requires* wiring that native redirect return.
+- The federation _interaction_ differs by surface: web = server-side redirect; native (mobile/desktop) = OAuth **PKCE** in the system browser + **deep-link** return. Mobile today confirms email in-browser and deferred the deep-link screen — federation _requires_ wiring that native redirect return.
 
 ## Data flow — login via the hub
 
 **Web (yp Next app):**
+
 1. yp `/login` → "Sign in with Fleetworks" → GoTrue OIDC `authorize` → redirect to the hub.
 2. Auth at `account.fleetworks.dev` (apex UI → Zitadel Session API). New users can self-register here.
 3. Zitadel issues an OIDC `code` → yp GoTrue callback → GoTrue exchanges tokens, reads `sub` + verified `email` + `name`.
 4. GoTrue links to the existing yp user by verified email (or provisions one), mints the yp Supabase session → user lands in yp.
 
 **Mobile (yp Expo app):**
+
 1. yp mobile `login` → "Sign in with Fleetworks" → `supabase.auth.signInWithOAuth({ provider: <zitadel-oidc>, options: { redirectTo: '<app-scheme>://auth/callback', skipBrowserRedirect: true } })`.
 2. Open the returned URL in the system browser (`expo-web-browser`) → `account.fleetworks.dev` login (same hub UI) → Zitadel.
 3. Zitadel redirects to `<app-scheme>://auth/callback?code=…` → the app's **deep-link handler** hands the code to `supabase.auth.exchangeCodeForSession` (**PKCE**) → same account-linking → native session.
@@ -111,7 +116,7 @@ Password-login flow is unchanged on every surface (no hub involvement).
 - Secrets: Zitadel masterkey, DB creds, SMTP creds — Render env (not committed). Zitadel admin bootstrap via its init config.
 - SES: a `auth.id.fleetworks.dev` SES identity + DKIM + IAM SMTP user, provisioned by the same per-repo Terraform infra pattern (either a new `hub`/apex `infra/` root or a small addition) so Zitadel's verification/reset/MFA mail authenticates (SPF/DKIM/DMARC).
 - Zitadel config: create org "Fleetworks", a Project, the yp OIDC app, and the apex account-UI app; enable self-service registration; brand the (fallback) hosted pages even though apex drives the custom UI.
-  - **Redirect topology (important):** Supabase (yp's GoTrue) is the single OIDC client of Zitadel, so Zitadel's `redirect_uri` = the yp **GoTrue callback URL only** — shared by web *and* native. The native **app-scheme** (`<app-scheme>://auth/callback`) is a Supabase↔app concern, added to the yp Supabase **redirect allow-list** (cogs supabase-sync). So mobile support needs **no extra Zitadel client** — only the Supabase allow-list entry + the app-side deep-link/PKCE wiring.
+  - **Redirect topology (important):** Supabase (yp's GoTrue) is the single OIDC client of Zitadel, so Zitadel's `redirect_uri` = the yp **GoTrue callback URL only** — shared by web _and_ native. The native **app-scheme** (`<app-scheme>://auth/callback`) is a Supabase↔app concern, added to the yp Supabase **redirect allow-list** (cogs supabase-sync). So mobile support needs **no extra Zitadel client** — only the Supabase allow-list entry + the app-side deep-link/PKCE wiring.
 - Mobile deps: add `expo-web-browser` (and deep-link config) to yp's `apps/mobile`; the existing native `@supabase/supabase-js` client gains the `signInWithOAuth` + `exchangeCodeForSession` path.
 
 ## Dual-mode guarantee & rollback
@@ -122,6 +127,7 @@ Password-login flow is unchanged on every surface (no hub involvement).
 ## Testing / acceptance
 
 (SES production access was granted 2026-07-29 — email now delivers to any recipient, not just the verified `+smoketest` address.)
+
 - **Web e2e:** create a Fleetworks account at `account.fleetworks.dev` → on yp web click "Sign in with Fleetworks" → authenticate → land logged-in in yp.
 - **Mobile e2e (on device):** yp Expo app → "Sign in with Fleetworks" → system browser opens `account.fleetworks.dev` → authenticate → deep-link returns to the app → native session established → land logged-in. Verify on the iPhone 17 (the mobile-parity canary device).
 - **Cross-surface identity:** the same Fleetworks account logs into yp from both web and mobile and resolves to the SAME yp Supabase user.
