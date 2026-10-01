@@ -1,3 +1,5 @@
+// playwright is not a dependency of this package: run with a global/other install (one-off bootstrap script).
+// eslint-disable-next-line import/no-unresolved
 import pw from 'playwright';
 import fs from 'node:fs';
 
