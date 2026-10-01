@@ -1,0 +1,39 @@
+.page {
+  background: var(--fw-color-paper);
+  color: var(--fw-color-ink);
+  padding: clamp(32px, 6vw, 64px) clamp(24px, 5vw, 64px);
+}
+
+.inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.headline {
+  font-family: 'Bricolage Grotesque', var(--fw-font-sans);
+  font-weight: 600;
+  font-size: clamp(2.25rem, 4vw + 1rem, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 20px;
+  text-wrap: balance;
+}
+
+.body {
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--fw-color-muted);
+  max-width: 56ch;
+  margin: 0 0 24px;
+}
+
+.action {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  text-decoration: none;
+}
