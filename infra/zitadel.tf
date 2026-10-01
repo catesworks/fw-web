@@ -560,6 +560,38 @@ output "warden_web_client_id" {
   sensitive   = true
 }
 
+# Warden mobile — public PKCE native client, mirrors helmsman_mobile. Scheme
+# `warden` is from fw-warden/apps/mobile/app.json. Not applied yet: the mobile
+# app has no auth/callback route, so the redirect URI is the sibling-pattern
+# default. Verify it when mobile Zitadel cutover starts.
+resource "zitadel_application_oidc" "warden_mobile" {
+  org_id     = var.zitadel_org_id
+  project_id = zitadel_project.fleetworks_suite.id
+  name       = "Warden Mobile"
+
+  redirect_uris             = ["warden://auth/callback"]
+  post_logout_redirect_uris = ["warden://"]
+
+  response_types = ["OIDC_RESPONSE_TYPE_CODE"]
+  grant_types    = ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE", "OIDC_GRANT_TYPE_REFRESH_TOKEN"]
+  app_type       = "OIDC_APP_TYPE_NATIVE"
+
+  auth_method_type  = "OIDC_AUTH_METHOD_TYPE_NONE"
+  access_token_type = "OIDC_TOKEN_TYPE_JWT"
+
+  # Same reason as helmsman_mobile: mobile decodes the ID token locally.
+  id_token_userinfo_assertion = true
+
+  # Must stay false in production (relaxes redirect-URI validation).
+  dev_mode = false
+}
+
+output "warden_mobile_client_id" {
+  description = "warden_mobile's client_id (public client — no client_secret exists to output)."
+  value       = zitadel_application_oidc.warden_mobile.client_id
+  sensitive   = true
+}
+
 # ── Warden Phase 4 human identities — 5 accounts, matching the plan's ───────
 # canonical account/resource table (Baseline Facts). Two real production
 # accounts (admin@alpha-corp.com, dev@alpha-corp.com) provisioned fresh
