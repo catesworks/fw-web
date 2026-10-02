@@ -62,3 +62,21 @@ fw-web has no code dependency on the others.
 ## 9. Rollback
 
 Revert the merge commit. Nothing else holds state.
+
+## 10. Final verification (clean worktree)
+
+- **HEAD verified:** `c683c4d`. The doc commit that records this section follows the verified HEAD and changes docs only.
+- **Date:** 2026-10-01
+- **Method:** detached `git worktree` at `c683c4d`, Node v24.1.0, pnpm 10.33.0. fw-web has no `test` script and no DB suites, so no DB container was started. Its only workflow is `release-please.yml`, so the script set from `package.json` was run.
+
+| Command | Result | Detail |
+| --- | --- | --- |
+| `pnpm install --frozen-lockfile` | PASS | |
+| `pnpm typecheck` | PASS | |
+| `pnpm lint` | PASS | |
+| `pnpm format:check` | PASS | |
+| `pnpm build` | PASS | Next.js 15.5.21, 13/13 static pages generated |
+| `pnpm test` | N/A | no test script |
+
+- **Known warnings (non-blocking):** `next build` prints "The Next.js plugin was not detected in your ESLint configuration". pnpm also prints the host `${NPM_TOKEN}` `.npmrc` warning.
+- **Defects:** none.
