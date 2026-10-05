@@ -682,8 +682,8 @@ resource "zitadel_human_user" "warden_lhci_test" {
 # is genuinely read-only.
 #
 # Real expiry with a named owner — deliberately NOT inheriting the
-# lhci_seed_bot / lhci_login_client PATs' 9999-12-31 no-owner gap above, which
-# those blocks themselves call a known unresolved open item. Owner: Andrew Cates
+# legacy lhci_seed_bot / lhci_login_client PATs' 9999-12-31 no-owner gap (those
+# resources are removed, see the note at the end of this file). Owner: Andrew Cates
 # (catesandrew@gmail.com). Rotate before 2027-08-26.
 resource "zitadel_machine_user" "yellow_pages_admin_directory" {
   org_id            = var.zitadel_org_id
@@ -957,64 +957,13 @@ resource "zitadel_human_user" "chorus_lhci_test" {
   initial_skip_password_change = true
 }
 
-# Machine caller for testing.ts's CreateSession call (authenticates the
-# CALLER, not the account being logged in — testing.ts:66-69). No special
-# instance role: Session API's CreateSession only needs a valid authenticated
-# principal in the org, not IAM_OWNER or IAM_LOGIN_CLIENT.
-resource "zitadel_machine_user" "lhci_seed_bot" {
-  org_id      = var.zitadel_org_id
-  user_name   = "lhci-seed-bot@fleetworks.dev"
-  name        = "Lighthouse CI seed-bot (Session API caller)"
-  description = "testing.ts's ZITADEL_SEED_BOT_PAT — authenticates CreateSession calls only."
-}
-
-resource "zitadel_personal_access_token" "lhci_seed_bot" {
-  org_id  = var.zitadel_org_id
-  user_id = zitadel_machine_user.lhci_seed_bot.id
-  # Zitadel's own server-side default when this attribute is left unset —
-  # pinned explicitly (confirmed via `terraform plan` post-apply) so this
-  # config matches reality instead of drifting toward null every plan.
-  # Rotation policy for this PAT is a known open item, not automated yet.
-  expiration_date = "9999-12-31T23:59:59Z"
-}
-
-# Dedicated login-client machine user — resolves pre-mortem #2: a SEPARATE
-# IAM_LOGIN_CLIENT-scoped identity from the shared one that powers the
-# hosted Login V2 UI for every Fleetworks app (infra/zitadel-login-client.pat).
-# IAM_LOGIN_CLIENT is itself instance-wide — this does NOT narrow the
-# capability grant — but it buys independent revocability: this PAT can be
-# rotated/revoked without touching the shared identity every app's hosted
-# login depends on, and a compromise here doesn't leak the shared secret.
-resource "zitadel_machine_user" "lhci_login_client" {
-  org_id      = var.zitadel_org_id
-  user_name   = "lhci-login-client@fleetworks.dev"
-  name        = "Lighthouse CI login-client (CreateCallback caller)"
-  description = "testing.ts's ZITADEL_LOGIN_CLIENT_PAT — dedicated IAM_LOGIN_CLIENT, distinct from the shared login-client identity."
-}
-
-resource "zitadel_instance_member" "lhci_login_client" {
-  user_id = zitadel_machine_user.lhci_login_client.id
-  roles   = ["IAM_LOGIN_CLIENT"]
-}
-
-# expiration_date pinned far-future, matching lhci_seed_bot's PAT above —
-# rotation for both is a known open item (Phase 2 prerequisite, no owner
-# assigned yet); the token value is recoverable from Terraform state
-# (S3+KMS) if the local gitignored copy is ever lost.
-resource "zitadel_personal_access_token" "lhci_login_client" {
-  org_id          = var.zitadel_org_id
-  user_id         = zitadel_machine_user.lhci_login_client.id
-  expiration_date = "9999-12-31T23:59:59Z"
-}
-
-output "lhci_seed_bot_pat" {
-  description = "ZITADEL_SEED_BOT_PAT for apps/api's testing.ts — Phase 2 Render secret."
-  value       = zitadel_personal_access_token.lhci_seed_bot.token
-  sensitive   = true
-}
-
-output "lhci_login_client_pat" {
-  description = "ZITADEL_LOGIN_CLIENT_PAT for apps/api's testing.ts — Phase 2 Render secret."
-  value       = zitadel_personal_access_token.lhci_login_client.token
-  sensitive   = true
-}
+# Removed 2026-10-05: lhci_seed_bot and lhci_login_client (machine users, the
+# lhci_login_client IAM_LOGIN_CLIENT membership, both PATs and their outputs).
+# They fed the deprecated ZITADEL_SEED_BOT_PAT + ZITADEL_LOGIN_CLIENT_PAT pair
+# that the prod APIs no longer read. The seed-bot PAT was revoked by hand in the
+# Console; the Lighthouse mint now uses ZITADEL_TEST_MINT_PAT, a login-client-only
+# `test-mint` machine user created in the Console (fleetworks fw-monorepo
+# docs/runbooks/zitadel-prod-rollout.md, Part A). Applying this change destroys
+# the two Terraform-managed users and their PATs; the seed-bot PAT was already
+# deleted by hand, so state still lists it: expect a refresh-time "not found" for
+# that one resource (provider drops it from state), not an error.
