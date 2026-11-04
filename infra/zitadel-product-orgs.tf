@@ -38,8 +38,8 @@ resource "zitadel_org" "product" {
 
   lifecycle {
     # Destroying an org deletes all of its users and data. Lift this deliberately
-    # (it covers ALL orgs) only to remove one mistaken EMPTY org. This one block covers ALL
-    # orgs, and it does not stop a delete in the Console or API.
+    # (it covers ALL orgs) only to remove one mistaken EMPTY org. It does not stop a
+    # delete in the Console or API.
     prevent_destroy = true
   }
 }
