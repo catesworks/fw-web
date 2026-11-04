@@ -38,7 +38,8 @@ resource "zitadel_org" "product" {
 
   lifecycle {
     # Destroying an org deletes all of its users and data. Lift this deliberately,
-    # for one org, only to remove a mistaken EMPTY org.
+    # for one org, only to remove a mistaken EMPTY org. This one block covers ALL
+    # orgs, and it does not stop a delete in the Console or API.
     prevent_destroy = true
   }
 }
@@ -53,6 +54,11 @@ resource "zitadel_machine_user" "product_terraform" {
   access_token_type = "ACCESS_TOKEN_TYPE_JWT"
 }
 
+# ORG_OWNER is needed so the product repo can write org policies (login policy),
+# projects, apps, users and grants in its org. Blast radius: a holder of this key can
+# add owners, mint keys/PATs for any user in the org and change its policies/IdPs,
+# and possibly delete the org (unverified). Owner of the key: Andrew Cates, stored in
+# 1Password infra-access; rotate it on a schedule.
 resource "zitadel_org_member" "product_terraform" {
   for_each = local.zitadel_product_orgs
 
