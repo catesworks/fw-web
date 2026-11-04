@@ -21,6 +21,7 @@
 locals {
   zitadel_emails_from_patterns = [
     "no-reply@auth.id.fleetworks.dev", # neutral default sender for unmapped orgs
+    "no-reply@auth.formweave.catesworks.dev", # formweave (org formweave)
   ]
 }
 
