@@ -10,8 +10,10 @@
 # ONLY the user and the policy are Terraformed. The access key is created
 # out-of-band so its secret never enters Terraform state:
 #
-#   aws iam create-access-key --user-name zitadel-emails-worker \
-#     --query 'AccessKey.[AccessKeyId,SecretAccessKey]' --output text   # pipe into 1Password, never to a terminal
+#   aws iam create-access-key --user-name zitadel-emails-worker --output json
+#
+# The response contains the secret: capture it into variables or a 0600 template for
+# 1Password and never let it reach a terminal, a log or a file that is kept.
 #
 # Adding a product = add its From pattern here, add its org to
 # config/senders.json in zitadel-emails, and set SES_ALLOWED_FROM_PATTERNS to the
