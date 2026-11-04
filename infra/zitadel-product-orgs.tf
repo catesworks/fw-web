@@ -10,8 +10,8 @@
 # Per org this creates ONLY: the org, one `<org>-terraform` machine user and its
 # ORG_OWNER membership (scoped to that org alone, never IAM_OWNER). It does NOT
 # create a machine key or PAT: a key's private half would land in this shared
-# state. The owner mints the JWT-profile key in the Console and stores it in
-# 1Password (vault `infra-access`, item `fw-web/zitadel-<org>-terraform/prod`).
+# state. fw-web-worker mints the JWT-profile key via the API on the owner's go and
+# stores it straight in 1Password (vault `infra-access`, item `fw-web/zitadel-<org>-terraform/prod`).
 #
 # NEVER `terraform apply` this root unscoped (it cannot be planned honestly without
 # its real terraform.tfvars). Plan and apply with -target, see
@@ -37,8 +37,8 @@ resource "zitadel_org" "product" {
   is_default = false
 
   lifecycle {
-    # Destroying an org deletes all of its users and data. Lift this deliberately,
-    # for one org, only to remove a mistaken EMPTY org. This one block covers ALL
+    # Destroying an org deletes all of its users and data. Lift this deliberately
+    # (it covers ALL orgs) only to remove one mistaken EMPTY org. This one block covers ALL
     # orgs, and it does not stop a delete in the Console or API.
     prevent_destroy = true
   }
@@ -58,7 +58,8 @@ resource "zitadel_machine_user" "product_terraform" {
 # projects, apps, users and grants in its org. Blast radius: a holder of this key can
 # add owners, mint keys/PATs for any user in the org and change its policies/IdPs,
 # and possibly delete the org (unverified). Owner of the key: Andrew Cates, stored in
-# 1Password infra-access; rotate it on a schedule.
+# 1Password infra-access. Keys are minted with a 13-month expiry (rotate before
+# expiry; reminders are on the owner's calendar).
 resource "zitadel_org_member" "product_terraform" {
   for_each = local.zitadel_product_orgs
 

@@ -10,7 +10,7 @@ Create one Zitadel org per product on `id.fleetworks.dev` from this Terraform ro
 
 - Scope: 8 orgs: bookweave, collectweave, formweave, hullstock, linkweave, pipeo, pipeo-staff, uptimeloom. Names are the lowercase product slug.
 - Per org: a machine user `<org>-terraform` with an `ORG_OWNER` membership on that org only (never IAM_OWNER).
-- No key or PAT resource. The owner mints each JWT-profile key in the Console and stores it in 1Password vault `infra-access`, item `fw-web/zitadel-<org>-terraform/prod`. Peers get that location, never the key.
+- No key or PAT resource. After the apply, and only on the owner's explicit go, fw-web-worker mints each JWT-profile key through the Zitadel API with a 13-month expiry and writes it straight into 1Password vault `infra-access`, item `fw-web/zitadel-<org>-terraform/prod` (via a 0600 template, never printed; the owner approves the 1Password prompts). Peers get that location, never the key. The owner's Google Calendar gets a rotation reminder per key, 30 days before expiry. Minting touches only the new `<org>-terraform` user in its own org.
 - pipeo-staff is mapped to the same email sender as pipeo (owner decision relayed by zitadel-emails-worker), so no extra SES identity or From pattern is needed.
 
 ## What peers reported
@@ -68,7 +68,7 @@ terraform output -json product_org_ids
 terraform output -json product_terraform_user_ids
 ```
 
-If the outputs come back empty after a targeted apply (unconfirmed whether Terraform writes them), read the ids from the Console instead. Only these non-sensitive outputs are read; no `terraform show` and no state dump. The ids are sent by message to each product session and to zitadel-emails-worker (all eight, name to id). After applying, the owner mints each machine key in the Console and stores it in 1Password.
+If the outputs come back empty after a targeted apply (unconfirmed whether Terraform writes them), read the ids from the Console instead. Only these non-sensitive outputs are read; no `terraform show` and no state dump. The ids are sent by message to each product session and to zitadel-emails-worker (all eight, name to id). After applying, fw-web-worker mints each machine key on the owner's go (see Decisions).
 
 ## Rollback
 
@@ -85,7 +85,7 @@ Renaming is not an in-place change. The name is the `for_each` key and part of t
 ## Risks
 
 - Shared-instance mutation: 8 new orgs, additive only; no existing org or resource is touched. A duplicate name would fail at apply time.
-- `ORG_OWNER` is broad inside its org: it can add other owners, mint keys or PATs for any user in the org, and change org policies and IdPs, none of which `prevent_destroy` covers. It may also be able to delete its own org (unverified; verify before handing out keys). Treat each key as high-value: 1Password `infra-access` only, rotate on a schedule.
+- `ORG_OWNER` is broad inside its org: it can add other owners, mint keys or PATs for any user in the org, and change org policies and IdPs, none of which `prevent_destroy` covers. It may also be able to delete its own org (unverified; verify before handing out keys). Treat each key as high-value: 1Password `infra-access` only, 13-month expiry, rotate before it.
 - `prevent_destroy` protects only against Terraform. A delete in the Console or API bypasses it.
 - Zitadel may add the creating user (the hub `terraform` IAM_OWNER user) as a member of each new org. That adds no real access but shows in member lists.
 - The unrelated pending drift in this root is untouched by `-target`.
@@ -95,7 +95,7 @@ Renaming is not an in-place change. The name is the `for_each` key and part of t
 ## Order after the apply
 
 1. The owner applies; I send the ids to all sessions.
-2. The owner mints the eight machine keys and stores them in 1Password.
+2. On the owner's go, fw-web-worker mints the eight machine keys into 1Password and creates the calendar reminders.
 3. Each product applies its SES identity (own infra root).
 4. Each product opens its two mapping PRs: zitadel-emails (`brands.ts`, `config/senders.json`, test) and fw-web (`local.zitadel_emails_from_patterns` in `infra/zitadel-emails-iam.tf`). pipeo adds two `senders.json` entries (pipeo and pipeo-staff, same brand and From) and one From pattern.
 5. zitadel-emails does one bundled release; fw-web's IAM policy change is a separate targeted plan.
