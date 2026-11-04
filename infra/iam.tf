@@ -15,10 +15,17 @@ resource "aws_iam_user" "ses" {
   }
 }
 
+# The hub key feeds the frozen SMTP rollback provider (zitadel.tf): do NOT rotate it
+# via terraform apply. prevent_destroy covers every domain's key (for_each), so
+# removing a domain from var.domains fails at plan time until this block is lifted.
 resource "aws_iam_access_key" "ses" {
   for_each = var.domains
 
   user = aws_iam_user.ses[each.key].name
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Inline send policy: allow ONLY ses:SendRawEmail (the action the SMTP interface

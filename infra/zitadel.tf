@@ -712,8 +712,21 @@ output "yellow_pages_admin_directory_pat" {
 }
 
 # ── Transactional email via the hub's own SES identity ───────────────────────
-# Credentials come straight from this root's IAM resources (iam.tf) — no manual
-# copy/paste of an SMTP password, and rotation is `terraform apply`.
+# FROZEN as the rollback path for the zitadel-emails HTTP notification provider
+# (catesworks/zitadel-emails, docs/runbooks/provider-switch.md). Zitadel has ONE
+# active email provider for the whole instance; once the HTTP provider is active,
+# `POST /admin/v1/email/<this provider id>/_activate` must always work with these
+# exact credentials. So: no `terraform apply` may rotate, update, re-activate or
+# delete this provider (ignore_changes = all, prevent_destroy). Rotating the AWS key
+# is NOT a password-only change: the SMTP user is the key id and the password is derived
+# from the secret key, so both change. An in-place `PUT /admin/v1/email/smtp/{id}` that
+# changes the password wedges the smtp_configs6 projection (zitadel-emails rehearsal
+# E2E-5: the update is lost and later provider changes are delayed ~15-45 s); whether
+# `PUT .../smtp/{id}/password` avoids that is UNTESTED. There is no verified rotation
+# procedure: if it is ever needed, rehearse it against a copy first (a replacement
+# provider created and tested by API is the safer shape), outside Terraform. Do NOT
+# rotate aws_iam_access_key.ses[hub] via apply, and do NOT port the next-starters
+# replace pattern. Lift this block and the one on the access key together.
 resource "zitadel_email_provider_smtp" "ses" {
   description = "AWS SES (${var.ses_region}) — auth.id.fleetworks.dev"
   # DELIBERATELY :587 (STARTTLS), not :465. Zitadel logs
@@ -734,9 +747,16 @@ resource "zitadel_email_provider_smtp" "ses" {
   sender_name      = "Fleetworks"
   reply_to_address = "support@fleetworks.dev"
   tls              = true
-  set_active       = true
+  # No-op under ignore_changes = all; any re-creation comes back INACTIVE so an apply
+  # can never take over from the HTTP provider.
+  set_active = false
 
   depends_on = [aws_sesv2_email_identity_mail_from_attributes.this]
+
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = true
+  }
 }
 
 # ── Instance branding ────────────────────────────────────────────────────────
