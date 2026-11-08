@@ -20,8 +20,10 @@
 # same list (the worker refuses to start if a configured sender matches none).
 locals {
   zitadel_emails_from_patterns = [
-    "no-reply@auth.id.fleetworks.dev",        # neutral default sender for unmapped orgs
-    "no-reply@auth.linkweave.catesworks.dev", # linkweave (org 398176037898289510)
+    "no-reply@auth.id.fleetworks.dev",           # neutral default sender for unmapped orgs
+    "no-reply@auth.linkweave.catesworks.dev",    # linkweave (org 398176037898289510)
+    "no-reply@auth.formweave.catesworks.dev",    # formweave (org 398176037847957862)
+    "no-reply@auth.collectweave.catesworks.dev", # collectweave (org 398176037747294566)
   ]
 }
 
