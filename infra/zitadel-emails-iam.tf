@@ -24,6 +24,7 @@ locals {
     "no-reply@auth.linkweave.catesworks.dev",    # linkweave (org 398176037898289510)
     "no-reply@auth.formweave.catesworks.dev",    # formweave (org 398176037847957862)
     "no-reply@auth.collectweave.catesworks.dev", # collectweave (org 398176037747294566)
+    "no-reply@auth.lineos.catesworks.dev",       # LineOS + LineOS-Staff (orgs 396152745595240786, 396152745712681298)
   ]
 }
 
