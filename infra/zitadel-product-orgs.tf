@@ -26,6 +26,7 @@ locals {
     "linkweave",
     "pipeo",
     "pipeo-staff",
+    "rollkit",
     "uptimeloom",
   ])
 }
