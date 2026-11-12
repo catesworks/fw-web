@@ -28,6 +28,7 @@ locals {
     "no-reply@auth.bookweave.catesworks.dev",    # bookweave (org 398176037764071782)
     "no-reply@auth.uptimeloom.catesworks.dev",   # uptimeloom (org 398176037831180646)
     "no-reply@auth.hullstock.catesworks.dev",    # hullstock (org 398176037696962918)
+    "no-reply@auth.pipeo.catesworks.dev",        # pipeo and pipeo-staff (orgs 398176038015730022, 398176037730517350)
   ]
 }
 
