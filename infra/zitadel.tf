@@ -792,15 +792,22 @@ resource "zitadel_default_label_policy" "fleetworks" {
 
 # ── Login behaviour ──────────────────────────────────────────────────────────
 # Every value here restates the instance's existing defaults EXCEPT
-# default_redirect_uri. Without it, a user who reaches the hub directly (rather
-# than through an app's "Sign in with Fleetworks") finishes login on a dead-end
-# "You are signed in." page with nowhere to go. This sends them to the apex,
-# which lists the products. The real fix is the account portal (sub-project 6).
+# default_redirect_uri and allow_register. Without default_redirect_uri, a user
+# who reaches the hub directly (rather than through an app's "Sign in with
+# Fleetworks") finishes login on a dead-end "You are signed in." page with
+# nowhere to go. This sends them to the apex, which lists the products. The real
+# fix is the account portal (sub-project 6).
+#
+# allow_register = false hides the hosted Register option only. Accounts are
+# created by each product's own signup flow through the Zitadel API (not gated by
+# this setting), by Terraform, or by invite. Re-enable it if a product relies on
+# the hosted Register page. Self-registered accounts otherwise land in the
+# default org with no project role.
 resource "zitadel_default_login_policy" "fleetworks" {
   default_redirect_uri = "https://fleetworks.dev"
 
   user_login               = true
-  allow_register           = true
+  allow_register           = false
   allow_external_idp       = true
   allow_domain_discovery   = true
   force_mfa                = false
