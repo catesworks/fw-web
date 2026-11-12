@@ -1,0 +1,2 @@
+- [Orgs and register sync, Nov 2026](project_orgs_register_sync_2026_11.md) — rollkit org applied; #14 merged not applied; resume from docs/sessions/2026-11-11-orgs-register-sync/
+- [Branch tracking gotcha](feedback_git_branch_tracking.md) — use --no-track and an explicit push refspec; a plain push -u landed a commit on main
