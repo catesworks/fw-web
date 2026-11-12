@@ -45,6 +45,24 @@ terraform plan -lock-timeout=60s \
 
 The result must be exactly **24 to add, 0 to change, 0 to destroy** (8 orgs, 8 machine users, 8 memberships). Anything else: stop. The placeholders are unused by the targeted resources. The zitadel provider reads `infra/zitadel-provider-key.json` implicitly. Terraform warns that targeting is in effect; that is expected. Method follows zitadel-emails `LESSONS.md` and fw-web PR #4.
 
+## Adding one more org later
+
+The commands above are the original 8-org apply (24 to add). Do not reuse the bare `-target=zitadel_org.product` form to add a single org: it targets every instance of the resource. Add the name to `local.zitadel_product_orgs`, then plan and apply only that org's three instances (rollkit, added 2026-11-08, is the worked example: 3 to add, 0 to change, 0 to destroy, applied by the owner 2026-11-11):
+
+```bash
+terraform plan -lock-timeout=60s -out=<name>.tfplan \
+  -target='zitadel_org.product["<name>"]' \
+  -target='zitadel_machine_user.product_terraform["<name>"]' \
+  -target='zitadel_org_member.product_terraform["<name>"]'
+terraform apply -lock-timeout=60s <name>.tfplan
+```
+
+- The plan summary must be exactly 3 to add, 0 to change, 0 to destroy, all for that name. Anything else: stop.
+- The saved plan file is not gitignored; delete it after the apply and never commit it.
+- Use the `AWS_PROFILE` and placeholder `TF_VAR_*` variables from the block above. Without the placeholders, Terraform stops at a prompt for `var.cloudflare_api_token`; cancel with Ctrl-C instead of typing a value.
+- A cancelled plan can leave a state lock held by your own machine. Before `terraform force-unlock <id>`, confirm that the lock's `Who` is you and that no `terraform` core process is running (`pgrep -fl terraform`); an orphaned provider plugin process does not hold the lock. Other sessions apply from the same state key, so never unlock a lock that names someone else.
+- Then record the ids in 1Password item `fw-web/zitadel-product-orgs/prod` (fields `<name> org id` and `<name>-terraform user id`) and mint the key as described in Decisions.
+
 ## Review
 
 An independent reviewer reviews the head commit (not the author). Fixes go on the same branch, then re-review on the new head. fw-web has no branch protection, so the review is the gate. Merge only with the owner's OK.
@@ -73,7 +91,7 @@ If the outputs come back empty after a targeted apply (unconfirmed whether Terra
 
 ## Rollback
 
-`prevent_destroy` is on the one `zitadel_org.product` resource block, so it covers all eight orgs at once. Lifting it lifts it for every org. To remove one mistaken, EMPTY org:
+`prevent_destroy` is on the one `zitadel_org.product` resource block, so it covers every org in the set at once. Lifting it lifts it for every org. To remove one mistaken, EMPTY org:
 
 1. In a small PR, delete that org's name from `local.zitadel_product_orgs` and temporarily remove the `prevent_destroy` line.
 2. A targeted plan, `-target='zitadel_org.product["<name>"]' -target='zitadel_machine_user.product_terraform["<name>"]' -target='zitadel_org_member.product_terraform["<name>"]'`, must show exactly 3 to destroy (member, machine user, org), all for that name, and nothing else.
