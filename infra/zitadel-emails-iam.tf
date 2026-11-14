@@ -29,6 +29,7 @@ locals {
     "no-reply@auth.uptimeloom.catesworks.dev",   # uptimeloom (org 398176037831180646)
     "no-reply@auth.hullstock.catesworks.dev",    # hullstock (org 398176037696962918)
     "no-reply@auth.pipeo.catesworks.dev",        # pipeo and pipeo-staff (orgs 398176038015730022, 398176037730517350)
+    "no-reply@auth.dont-panic.catesworks.dev",   # dont-panic (org 399512501395390822)
   ]
 }
 
