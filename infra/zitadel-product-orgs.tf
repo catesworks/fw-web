@@ -21,6 +21,7 @@ locals {
   zitadel_product_orgs = toset([
     "bookweave",
     "collectweave",
+    "dont-panic",
     "formweave",
     "hullstock",
     "linkweave",
