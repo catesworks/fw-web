@@ -109,7 +109,7 @@ An SES sending identity of the form `auth.<host>.fleetworks.dev` that hub mail i
 _Avoid_: sending domain, mail domain
 
 **Product org**:
-A Zitadel org on the shared **Hub** instance for one product, created centrally in `infra/zitadel-product-orgs.tf` with `prevent_destroy`. The nine today (bookweave, collectweave, formweave, hullstock, linkweave, pipeo, pipeo-staff, rollkit, uptimeloom) are products outside the **Suite**.
+A Zitadel org on the shared **Hub** instance for one product, created centrally in `infra/zitadel-product-orgs.tf` with `prevent_destroy`. The eleven today (bookweave, collectweave, formweave, hullstock, linkweave, localweave, localweave-staff, pipeo, pipeo-staff, rollkit, uptimeloom) are products outside the **Suite**.
 _Avoid_: tenant, organization (unqualified)
 
 **Org-scoped machine user**:

@@ -24,6 +24,8 @@ locals {
     "formweave",
     "hullstock",
     "linkweave",
+    "localweave",
+    "localweave-staff",
     "pipeo",
     "pipeo-staff",
     "rollkit",
