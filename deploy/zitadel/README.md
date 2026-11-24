@@ -1,5 +1,8 @@
 # Fleetworks Identity Hub — Zitadel runbook
 
+> **Status: this document describes the Fly.io deployment, which no longer exists.** Zitadel (`id.fleetworks.dev`) and the Login v2 UI (`account.fleetworks.dev`) moved to CapRover on app-02 on 2026-09-27 to 2026-09-29, and both Fly apps and the Fly Postgres were destroyed. Source of truth now: hostinger `ansible/vars/services.yml`, entries `zitadel` (port 8080) and `zitadel-login` (port 3000), both `excluded_from_bulk_apps`, images `ghcr.io/zitadel/zitadel` and `zitadel-login` at `v4.17.3` when checked on 2026-11-24, and hostinger's dossier `docs/sessions/2026-09-27-zitadel-cutover/`. Native gRPC (h2c) is served by `nginx_grpc_h2c: true` on the `zitadel` entry. The database is a Supabase project reached through the session pooler (see the comments on that entry). Secrets are no longer Fly secrets: each entry lists its env names and takes values from SSM (for example `/catesworks/zitadel-login`). Everything below is kept as history; the Fly deploy, secrets and Postgres-risk sections do not apply. Not verified live by the author of this banner.
+
+
 The hub is a self-hosted [Zitadel](https://zitadel.com) instance that every
 Fleetworks product app federates to. Products keep their own Supabase Auth as
 the session authority; Zitadel is the upstream OIDC identity provider they
@@ -168,7 +171,7 @@ it should not be the destination for an end user. The supported journey is
 app → "Sign in with Fleetworks" → hub → back to the app.
 
 It also quietly breaks the linking guarantee, which depends on a verified email.
-`EMAIL_VERIFICATION = "true"` is now set in `deploy/account/fly.toml`.
+`EMAIL_VERIFICATION = "true"` is now set in `deploy/account/fly.toml`. (Historical: the `zitadel-login` entry in hostinger `services.yml` now lists `EMAIL_VERIFICATION` among its env names with the value from SSM; its live value was not verified.)
 
 ## Email templates
 

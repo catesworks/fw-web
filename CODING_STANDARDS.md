@@ -15,7 +15,7 @@ The repo holds two things that share one root:
 | Apex marketing site           | TypeScript, TSX, CSS Modules | `src/app/**`, `src/components/**`                                                     |
 | Fleetworks identity hub (IaC) | Terraform (HCL)              | `infra/*.tf`                                                                          |
 | Hub operational scripts       | Node.js ESM (`.mjs`)         | `scripts/*.mjs`                                                                       |
-| Hub deploy config             | TOML                         | `deploy/zitadel/fly.toml`, `deploy/account/fly.toml`                                  |
+| Hub deploy config (historical) | TOML                        | `deploy/zitadel/fly.toml`, `deploy/account/fly.toml` (Fly apps destroyed 2026-09-29; the Hub runs on CapRover app-02) |
 | Docs, plans, ADRs, dossiers   | Markdown                     | `PRODUCT.md`, `DESIGN.md`, `docs/**`, `deploy/zitadel/README.md`                      |
 | Repo config                   | JSON, YAML                   | `package.json`, `tsconfig.json`, `release-please-config.json`, `secrets.manifest.yml` |
 
@@ -216,7 +216,7 @@ Counts are from tracked files at the time of writing. Source files were **not** 
 | Accent fallback color               | apex `#111827`                                                           | `helmsman/cloud-agents/page.module.css` and `page.tsx` mix `#2e62c9` (Helmsman blue) and `#111827` as fallbacks for the same `--helmsman-accent`.                                                                                |
 | Script shebang                      | `#!/usr/bin/env node` (4 of 6)                                           | `render-brand-logo.mjs`, `zitadel-bootstrap.mjs` (Playwright one-offs, not meant to run as executables).                                                                                                                         |
 | Commit subject format               | Conventional Commits (74 of 77)                                          | `add envrc`, `bd init: initialize beads issue tracking`, `infra(hub): ...` (`infra` is not a configured release-please type).                                                                                                    |
-| Hosting comments in `infra/`        | Fly hosts `id.` (`infra/hub-dns.tf` line 12, `deploy/zitadel/README.md`) | `infra/hub-dns.tf` record `comment` still says `-> Render`, and `infra/dns.tf` line 6 says Render terminates TLS. Stale after the move to Fly.                                                                                   |
+| Hosting comments in `infra/`        | CapRover on app-02 hosts `id.` and `account.` (hostinger `ansible/vars/services.yml`) | `infra/hub-dns.tf` and `infra/dns.tf` comments still name Fly or Render. `deploy/*/fly.toml` and `deploy/zitadel/README.md` describe the destroyed Fly deployment. |
 
 ## 10. Tooling Reference
 
