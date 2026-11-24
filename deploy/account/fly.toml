@@ -1,3 +1,6 @@
+# HISTORICAL: this Fly app was destroyed on 2026-09-29. Zitadel now runs on CapRover (app-02);
+# see hostinger ansible/vars/services.yml and deploy/zitadel/README.md.
+#
 # Fly.io deploy for the branded Fleetworks hub login UI (Zitadel Login v2).
 #
 # This is the official `zitadel-login` image, NOT a fork. Branding comes from

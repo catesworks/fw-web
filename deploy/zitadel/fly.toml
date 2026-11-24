@@ -1,3 +1,6 @@
+# HISTORICAL: this Fly app was destroyed on 2026-09-29. Zitadel now runs on CapRover (app-02);
+# see hostinger ansible/vars/services.yml and deploy/zitadel/README.md.
+#
 # Fly.io deploy for the Fleetworks identity hub (Zitadel).
 #
 # WHY FLY AND NOT RENDER: Zitadel requires a reverse proxy that forwards HTTP/2
