@@ -1,6 +1,6 @@
 ---
 name: project-orgs-register-sync-2026-11
-description: "State of fw-web product orgs, rollkit org and allow_register=false (merged, not applied) as of 2026-11-11, with the dossier path to resume from"
+description: "State of fw-web product orgs (rollkit, localweave, localweave-staff, dont-panic keyed) and allow_register=false (applied 2026-11-24), with the dossier path to resume from"
 metadata:
   node_type: memory
   type: project
@@ -13,3 +13,5 @@ fw-web-worker session, 2026-11-07 to 2026-11-11. Rollkit Zitadel org applied (or
 **Why:** a multi-session rollout (linkweave, zitadel-emails, hostinger and product sessions) depends on this order: product org, own SES identity verified, fw-web IAM From pattern applied BEFORE the zitadel-emails release.
 
 **How to apply:** resume from `docs/sessions/2026-11-11-orgs-register-sync/README.md` and `FOLLOWUPS.md` in fw-web. Owner applies hub Terraform from their terminal with `AWS_PROFILE=workloom` and per-instance `-target`. Never push a new branch with `git push -u` from a branch tracking `origin/main` (see [[feedback-git-branch-tracking]]).
+
+**Update 2026-11-28:** #14 is APPLIED (hullstock-worker, scoped plan, 2026-11-24). Orgs localweave, localweave-staff and dont-panic are created, their ids recorded and keys minted (calendar reminders set). All 11 SES identities verify. Current resume point: `docs/sessions/2026-11-28-orgs-keys-hosting/README.md`.

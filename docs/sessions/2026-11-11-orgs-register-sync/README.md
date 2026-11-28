@@ -1,5 +1,7 @@
 # Session dossier: product orgs and hosted-registration sync (2026-11-07 to 2026-11-11)
 
+> **Superseded in part (2026-11-28):** #14 is now APPLIED and more orgs exist. Read `docs/sessions/2026-11-28-orgs-keys-hosting/README.md` first.
+
 Session `fw-web-worker`. Coordinated the fw-web side of a multi-session product rollout on the shared Zitadel hub (`id.fleetworks.dev`): answered peer sessions, merged and closed the open fw-web PRs, turned off hosted self-registration in the instance default (merged, not applied), created the `rollkit` product org and minted its key, and updated the hostinger onboarding skill.
 
 ## State in one paragraph
